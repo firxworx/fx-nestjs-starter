@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import { Logger, ValidationPipe } from '@nestjs/common'
 
 import helmet from 'helmet'
+import * as cookieParser from 'cookie-parser'
 
 import { AppModule } from './modules/app/app.module'
 import { AppConfig } from './config/app.config'
@@ -27,8 +28,6 @@ async function bootstrap() {
     throw new Error('Error resolving app config (undefined)')
   }
 
-  app.use(helmet())
-
   // the global prefix value does not begin with a slash so it is removed via regex from the basePath (as obtained from env or `src/config/defaults`) if present
   const globalPrefixValue = `${appConfig.basePath.replace(/^\/+/, '')}/${appConfig.apiVersion}`
   app.setGlobalPrefix(globalPrefixValue)
@@ -41,6 +40,11 @@ async function bootstrap() {
       // forbidNonWhitelisted: true,
     }),
   )
+
+  // @starter - use cookie-parser express middleware to populate `req.cookies`
+  app.use(cookieParser.default())
+
+  app.use(helmet())
 
   await app.listen(appConfig.port, () => {
     logger.log(`😎 Application listening on port <${appConfig.port}> at path: ${globalPrefixValue}`)

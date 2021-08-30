@@ -7,11 +7,13 @@ import * as cookieParser from 'cookie-parser'
 
 import { AppModule } from './modules/app/app.module'
 import { AppConfig } from './config/app.config'
+import { AnyExceptionFilter } from './filters/any-exception.filter'
 
 /**
  * Bootstrap the NestJS app.
  *
  * @starter review main.ts for logger, global prefix, global pipes/filters/etc.
+ * @see AppModule for additional global `imports` and `providers`
  */
 async function bootstrap() {
   const logger = new Logger('main')
@@ -32,8 +34,10 @@ async function bootstrap() {
   const globalPrefixValue = `${appConfig.basePath.replace(/^\/+/, '')}/${appConfig.apiVersion}`
   app.setGlobalPrefix(globalPrefixValue)
 
+  // ensure the `onApplicationShutdown()` function of providers are called if process receives a shutdown signal
   app.enableShutdownHooks()
 
+  // use global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -41,13 +45,26 @@ async function bootstrap() {
     }),
   )
 
-  // @starter - use cookie-parser express middleware to populate `req.cookies`
+  // enable cors for this api based on app config
+  app.enableCors({
+    origin: appConfig.origin,
+    credentials: true, // support auth cookies
+    // methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    // allowedHeaders: ...
+  })
+
+  // use cookie-parser express middleware to populate `req.cookies`
   app.use(cookieParser.default())
 
+  // use AnyExceptionFilter to log all unhandled exceptions and return a standardized json response format
+  app.useGlobalFilters(new AnyExceptionFilter())
+
+  // use helmet for common security enhancements
   app.use(helmet())
 
   await app.listen(appConfig.port, () => {
-    logger.log(`😎 Application listening on port <${appConfig.port}> at path: ${globalPrefixValue}`)
+    logger.log(`😎 Application listening on port <${appConfig.port}> at path <${globalPrefixValue}>`)
+    logger.log(`😎 Accepting requests from origin: <${appConfig.origin}>`)
   })
 }
 

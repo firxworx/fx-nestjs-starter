@@ -16,12 +16,10 @@ services:
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
-    ports:
-      # host_port:container_port
+    ports: # format: host_port:container_port
       - ${PORT}:${PORT}
-      # - 9229:9229 # debug port
-    # command: dumb-init yarn start:prod
-    command: dumb-init node dist/main
+      - 9229:9229 # debug port
+    command: dumb-init node dist/main # command: dumb-init yarn start:prod
     env_file:
       - .env
     networks:
@@ -50,6 +48,7 @@ services:
   #   networks:
   #     - appnet
   #   environment:
+  #     TZ: "UTC"
   #     POSTGRES_PASSWORD: ${DB_PASSWORD}
   #     POSTGRES_USER: ${DB_USERNAME}
   #     POSTGRES_DB: ${DB_DATABASE_NAME}

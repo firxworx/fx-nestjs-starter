@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core'
 import { ConfigService } from '@nestjs/config'
 import { Logger, ValidationPipe } from '@nestjs/common'
 
+import helmet from 'helmet'
+
 import { AppModule } from './modules/app/app.module'
 import { AppConfig } from './config/app.config'
 
@@ -24,6 +26,8 @@ async function bootstrap() {
   if (!appConfig) {
     throw new Error('Error resolving app config (undefined)')
   }
+
+  app.use(helmet())
 
   // the global prefix value does not begin with a slash so it is removed via regex from the basePath (as obtained from env or `src/config/defaults`) if present
   const globalPrefixValue = `${appConfig.basePath.replace(/^\/+/, '')}/${appConfig.apiVersion}`

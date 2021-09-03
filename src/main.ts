@@ -5,6 +5,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express'
 
 import helmet from 'helmet'
 import * as cookieParser from 'cookie-parser'
+import compression from 'compression'
 
 import { AppModule } from './modules/app/app.module'
 import { AppConfig } from './config/app.config'
@@ -60,12 +61,17 @@ async function bootstrap(): Promise<NestExpressApplication> {
   // use AnyExceptionFilter to log all unhandled exceptions and return a standardized json response format
   app.useGlobalFilters(new AnyExceptionFilter())
 
-  // trust proxy to trust X-Forwarded-* headers (express specific)
+  // conditionally use compression (express middleware) per app config
+  if (appConfig.express.compression) {
+    app.use(compression())
+  }
+
+  // conditionally trust proxy (trust X-Forwarded-* headers)
   if (appConfig.express.trustProxy) {
     app.enable('trust proxy')
   }
 
-  // use helmet for common security enhancements
+  // use helmet to set common security-related http headers
   app.use(helmet())
 
   return app.listen(appConfig.port, () => {

@@ -5,7 +5,6 @@ import {
   DEFAULT_BASE_PATH,
   DEFAULT_THROTTLE_LIMIT,
   DEFAULT_THROTTLE_TTL,
-  DEFAULT_EXPRESS_TRUST_PROXY,
 } from './defaults'
 
 const PORT = process.env.PORT ? +process.env.PORT : DEFAULT_PORT
@@ -35,15 +34,14 @@ const getOrigin = () => {
 }
 
 const getExpressConfig = () => {
-  const trustProxy = process.env.DEVOPS_DEPLOY_MODE
-    ? process.env.DEVOPS_DEPLOY_MODE === 'proxy'
-      ? true
-      : false
-    : DEFAULT_EXPRESS_TRUST_PROXY
+  const isProxyDeployMode = !!(process.env.DEVOPS_DEPLOY_MODE && process.env.DEVOPS_DEPLOY_MODE === 'proxy'
+    ? true
+    : false)
 
   return {
     express: {
-      trustProxy,
+      compression: !isProxyDeployMode,
+      trustProxy: isProxyDeployMode,
     },
   }
 }
@@ -56,6 +54,7 @@ export interface AppConfig {
   throttleTTL: number
   throttleLimit: number
   express: {
+    compression: boolean
     trustProxy: boolean
   }
 }

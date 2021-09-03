@@ -5,6 +5,7 @@ import {
   DEFAULT_BASE_PATH,
   DEFAULT_THROTTLE_LIMIT,
   DEFAULT_THROTTLE_TTL,
+  DEFAULT_EXPRESS_TRUST_PROXY,
 } from './defaults'
 
 const PORT = process.env.PORT ? +process.env.PORT : DEFAULT_PORT
@@ -33,6 +34,20 @@ const getOrigin = () => {
   return '*'
 }
 
+const getExpressConfig = () => {
+  const trustProxy = process.env.DEVOPS_DEPLOY_MODE
+    ? process.env.DEVOPS_DEPLOY_MODE === 'proxy'
+      ? true
+      : false
+    : DEFAULT_EXPRESS_TRUST_PROXY
+
+  return {
+    express: {
+      trustProxy,
+    },
+  }
+}
+
 export interface AppConfig {
   origin: string
   port: number
@@ -40,6 +55,9 @@ export interface AppConfig {
   apiVersion: string
   throttleTTL: number
   throttleLimit: number
+  express: {
+    trustProxy: boolean
+  }
 }
 
 export default registerAs('app', (): AppConfig => {
@@ -50,5 +68,6 @@ export default registerAs('app', (): AppConfig => {
     apiVersion: process.env.API_VERSION ?? DEFAULT_API_VERSION,
     throttleTTL: process.env.THROTTLE_TTL ? +process.env.THROTTLE_TTL : DEFAULT_THROTTLE_TTL,
     throttleLimit: process.env.THROTTLE_LIMIT ? +process.env.THROTTLE_LIMIT : DEFAULT_THROTTLE_LIMIT,
+    ...getExpressConfig(),
   }
 })

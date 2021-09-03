@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core'
 import { ConfigService } from '@nestjs/config'
 import { Logger, ValidationPipe } from '@nestjs/common'
+import type { NestExpressApplication } from '@nestjs/platform-express'
 
 import helmet from 'helmet'
 import * as cookieParser from 'cookie-parser'
@@ -15,10 +16,10 @@ import { AnyExceptionFilter } from './filters/any-exception.filter'
  * @starter review main.ts for logger, global prefix, global pipes/filters/etc.
  * @see AppModule for additional global `imports` and `providers`
  */
-async function bootstrap() {
+async function bootstrap(): Promise<NestExpressApplication> {
   const logger = new Logger('main')
 
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger:
       process.env.NODE_ENV === 'development' ? ['log', 'debug', 'error', 'verbose', 'warn'] : ['log', 'error', 'warn'],
   })
@@ -34,7 +35,7 @@ async function bootstrap() {
   const globalPrefixValue = `${appConfig.basePath.replace(/^\/+/, '')}/${appConfig.apiVersion}`
   app.setGlobalPrefix(globalPrefixValue)
 
-  // ensure the `onApplicationShutdown()` function of providers are called if process receives a shutdown signal
+  // ensure the `onApplicationShutdown()` functions of providers are called if process receives a shutdown signal
   app.enableShutdownHooks()
 
   // use global validation pipe
@@ -59,10 +60,15 @@ async function bootstrap() {
   // use AnyExceptionFilter to log all unhandled exceptions and return a standardized json response format
   app.useGlobalFilters(new AnyExceptionFilter())
 
+  // trust proxy to trust X-Forwarded-* headers (express specific)
+  if (appConfig.express.trustProxy) {
+    app.enable('trust proxy')
+  }
+
   // use helmet for common security enhancements
   app.use(helmet())
 
-  await app.listen(appConfig.port, () => {
+  return app.listen(appConfig.port, () => {
     logger.log(`😎 Application listening on port <${appConfig.port}> at path <${globalPrefixValue}>`)
     logger.log(`😎 Accepting requests from origin: <${appConfig.origin}>`)
   })

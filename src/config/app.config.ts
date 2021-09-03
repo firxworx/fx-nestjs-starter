@@ -57,6 +57,9 @@ export interface AppConfig {
     compression: boolean
     trustProxy: boolean
   }
+  openApiDocs: {
+    enable: boolean
+  }
 }
 
 export default registerAs('app', (): AppConfig => {
@@ -68,5 +71,8 @@ export default registerAs('app', (): AppConfig => {
     throttleTTL: process.env.THROTTLE_TTL ? +process.env.THROTTLE_TTL : DEFAULT_THROTTLE_TTL,
     throttleLimit: process.env.THROTTLE_LIMIT ? +process.env.THROTTLE_LIMIT : DEFAULT_THROTTLE_LIMIT,
     ...getExpressConfig(),
+    openApiDocs: {
+      enable: true,
+    },
   }
 })

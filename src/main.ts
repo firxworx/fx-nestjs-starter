@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core'
 import { ConfigService } from '@nestjs/config'
 import { Logger, ValidationPipe } from '@nestjs/common'
 import type { NestExpressApplication } from '@nestjs/platform-express'
+import { SwaggerModule, DocumentBuilder, SwaggerDocumentOptions, ExpressSwaggerCustomOptions } from '@nestjs/swagger'
 
 import helmet from 'helmet'
 import * as cookieParser from 'cookie-parser'
@@ -30,6 +31,23 @@ async function bootstrap(): Promise<NestExpressApplication> {
 
   if (!appConfig) {
     throw new Error('Error resolving app config (undefined)')
+  }
+
+  // @starter set openapi/swagger title, description, version, etc.
+  if (appConfig.openApiDocs.enable) {
+    const openApiConfig = new DocumentBuilder()
+      .setTitle('Project API')
+      .setDescription('')
+      .setVersion('0.1.0')
+      // .addTag('tagName')
+      // .addBearerAuth()
+      .build()
+
+    const openApiDocumentOptions: SwaggerDocumentOptions = {}
+    const openApiExpressCustomOptions: ExpressSwaggerCustomOptions = {}
+
+    const openApiDocument = SwaggerModule.createDocument(app, openApiConfig, openApiDocumentOptions)
+    SwaggerModule.setup('api', app, openApiDocument, openApiExpressCustomOptions)
   }
 
   // the global prefix value does not begin with a slash so it is removed via regex from the basePath (as obtained from env or `src/config/defaults`) if present

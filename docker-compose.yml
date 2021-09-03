@@ -19,11 +19,15 @@ services:
     ports: # format: host_port:container_port
       - ${PORT}:${PORT}
       - 9229:9229 # debug port
-    command: dumb-init node dist/main # command: dumb-init yarn start:prod
     env_file:
       - .env
     networks:
       - appnet
+    links:
+      - postgres:postgres
+    depends_on:
+      - postgres
+    command: dumb-init node dist/main # command: dumb-init yarn start:prod
     restart: unless-stopped
 
     # @starter - consider common additional properties for the api service --
@@ -42,21 +46,22 @@ services:
   #   networks:
   #     - appnet
 
-  # postgres:
-  #   container_name: postgres
-  #   image: postgres:12
-  #   networks:
-  #     - appnet
-  #   environment:
-  #     TZ: "UTC"
-  #     POSTGRES_PASSWORD: ${DB_PASSWORD}
-  #     POSTGRES_USER: ${DB_USERNAME}
-  #     POSTGRES_DB: ${DB_DATABASE_NAME}
-  #     PG_DATA: /var/lib/postgresql/data
-  #   ports:
-  #     - 5432:5432
-  #   volumes:
-  #     - pgdata:/var/lib/postgresql/data
+  postgres:
+    container_name: postgres
+    image: postgres:13.2 # postgres:alpine
+    networks:
+      - appnet
+    env_file:
+      - .env # refer to POSTGRES_* env vars
+    environment:
+      TZ: UTC
+      PG_DATA: /var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # ./db/initdb.d:/docker-entrypoint-initdb.d  # https://hub.docker.com/_/postgres/ (only runs if data dir empty)
+    restart: always
 
   # adminer:
   #   image: adminer
@@ -67,5 +72,5 @@ services:
 networks:
   appnet:
 
-# volumes:
-#   pgdata:
+volumes:
+  pgdata:

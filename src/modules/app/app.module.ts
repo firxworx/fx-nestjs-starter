@@ -3,7 +3,10 @@ import { ConfigModule } from '@nestjs/config'
 
 import appConfig from 'src/config/app.config'
 import authConfig from 'src/config/auth.config'
-// import { DatabaseModule } from '../database/database.module'
+import { AuthModule } from '../auth/auth.module'
+
+import { DatabaseModule } from '../database/database.module'
+import { UsersModule } from '../users/users.module'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 
@@ -14,7 +17,9 @@ import { AppService } from './app.service'
       isGlobal: true,
       load: [appConfig, authConfig],
     }),
-    // DatabaseModule,
+    DatabaseModule,
+    AuthModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

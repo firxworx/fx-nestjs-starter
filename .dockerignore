@@ -18,6 +18,7 @@ dist
 libs
 tmp
 tools
+docs
 npm-debug.log
 LICENSE
 README.md

@@ -8,6 +8,7 @@ import { AuthModule } from '../auth/auth.module'
 import { AwsModule } from '../aws/aws.module'
 
 import { DatabaseModule } from '../database/database.module'
+import { UiModule } from '../ui/ui.module'
 import { UsersModule } from '../users/users.module'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
@@ -23,6 +24,7 @@ import { AppService } from './app.service'
     AuthModule,
     UsersModule,
     AwsModule,
+    UiModule,
   ],
   controllers: [AppController],
   providers: [AppService],

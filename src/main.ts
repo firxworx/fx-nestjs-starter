@@ -1,12 +1,13 @@
 import { NestFactory } from '@nestjs/core'
 import { ConfigService } from '@nestjs/config'
-import { Logger, ValidationPipe } from '@nestjs/common'
+import { ValidationPipe } from '@nestjs/common'
 import type { NestExpressApplication } from '@nestjs/platform-express'
 import { SwaggerModule, DocumentBuilder, SwaggerDocumentOptions, ExpressSwaggerCustomOptions } from '@nestjs/swagger'
 
 import helmet from 'helmet'
 import * as cookieParser from 'cookie-parser'
 import compression from 'compression'
+import { Logger } from 'nestjs-pino'
 
 import { AppModule } from './modules/app/app.module'
 import { AppConfig } from './config/app.config'
@@ -19,11 +20,8 @@ import { AnyExceptionFilter } from './filters/any-exception.filter'
  * @see AppModule for additional global `imports` and `providers`
  */
 async function bootstrap(): Promise<NestExpressApplication> {
-  const logger = new Logger('main')
-
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    logger:
-      process.env.NODE_ENV === 'development' ? ['log', 'debug', 'error', 'verbose', 'warn'] : ['log', 'error', 'warn'],
+    logger: false,
   })
 
   const configService = app.get<ConfigService>(ConfigService)
@@ -32,6 +30,10 @@ async function bootstrap(): Promise<NestExpressApplication> {
   if (!appConfig) {
     throw new Error('Error resolving app config (undefined)')
   }
+
+  // use logger from nestjs-pino for json logs
+  const logger = app.get(Logger)
+  app.useLogger(logger)
 
   // @starter set openapi/swagger title, description, version, etc. @see - https://docs.nestjs.com/openapi/introduction
   if (appConfig.openApiDocs.enable) {
@@ -71,7 +73,9 @@ async function bootstrap(): Promise<NestExpressApplication> {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
+      transform: true,
       // forbidNonWhitelisted: true,
+      // disableErrorMessages: true, // or make env config option
     }),
   )
 
@@ -102,10 +106,16 @@ async function bootstrap(): Promise<NestExpressApplication> {
   // use helmet to set common security-related http headers
   app.use(helmet())
 
-  return app.listen(appConfig.port, () => {
-    logger.log(`😎 Application listening on port <${appConfig.port}> at path <${globalPrefixValue}>`)
-    logger.log(`😎 Accepting requests from origin: <${appConfig.origin}>`)
+  const httpServer = await app.listen(appConfig.port, () => {
+    logger.log(`🚀 Application environment: <${process.env.NODE_ENV}>`)
+    logger.log(`🚀 Application listening on port <${appConfig.port}> at path <${globalPrefixValue}>`)
+    logger.log(`🚀 Accepting requests from origin: <${appConfig.origin}>`)
   })
+
+  const url = await app.getUrl()
+  logger.log(`🚀 Application URL: <${url}>`)
+
+  return httpServer
 }
 
 bootstrap()

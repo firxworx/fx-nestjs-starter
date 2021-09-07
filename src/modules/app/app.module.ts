@@ -1,5 +1,6 @@
-import { Module } from '@nestjs/common'
+import { Module, RequestMethod } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+import { LoggerModule } from 'nestjs-pino'
 
 import appConfig from 'src/config/app.config'
 import authConfig from 'src/config/auth.config'
@@ -19,6 +20,17 @@ import { AppService } from './app.service'
     ConfigModule.forRoot({
       isGlobal: true,
       load: [appConfig, authConfig, awsConfig],
+    }),
+    // @see - https://github.com/iamolegga/nestjs-pino#configuration
+    LoggerModule.forRoot({
+      pinoHttp: [
+        {
+          level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
+          prettyPrint: process.env.NODE_ENV !== 'production', // uses pino-pretty package
+          // useLevelLabels: true, // deprecated - use the formatters.level option instead
+        },
+      ],
+      exclude: [{ method: RequestMethod.ALL, path: 'health' }],
     }),
     DatabaseModule,
     AuthModule,

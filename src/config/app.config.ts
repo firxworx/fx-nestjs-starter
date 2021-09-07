@@ -7,6 +7,23 @@ import {
   DEFAULT_THROTTLE_TTL,
 } from './defaults'
 
+export interface AppConfig {
+  origin: string
+  port: number
+  basePath: string
+  apiVersion: string
+  throttleTTL: number
+  throttleLimit: number
+  express: {
+    compression: boolean
+    trustProxy: boolean
+  }
+  openApiDocs: {
+    enable: boolean
+  }
+}
+
+/** Resolve the PORT for this API. */
 const PORT = process.env.PORT ? +process.env.PORT : DEFAULT_PORT
 
 /**
@@ -43,22 +60,6 @@ const getExpressConfig = () => {
       compression: !isProxyDeployMode,
       trustProxy: isProxyDeployMode,
     },
-  }
-}
-
-export interface AppConfig {
-  origin: string
-  port: number
-  basePath: string
-  apiVersion: string
-  throttleTTL: number
-  throttleLimit: number
-  express: {
-    compression: boolean
-    trustProxy: boolean
-  }
-  openApiDocs: {
-    enable: boolean
   }
 }
 

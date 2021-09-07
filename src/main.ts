@@ -33,18 +33,28 @@ async function bootstrap(): Promise<NestExpressApplication> {
     throw new Error('Error resolving app config (undefined)')
   }
 
-  // @starter set openapi/swagger title, description, version, etc.
+  // @starter set openapi/swagger title, description, version, etc. @see - https://docs.nestjs.com/openapi/introduction
   if (appConfig.openApiDocs.enable) {
+    logger.log('Enabling swagger')
     const openApiConfig = new DocumentBuilder()
       .setTitle('Project API')
-      .setDescription('')
+      .setDescription('Desc')
       .setVersion('0.1.0')
       // .addTag('tagName')
       // .addBearerAuth()
       .build()
 
     const openApiDocumentOptions: SwaggerDocumentOptions = {}
-    const openApiExpressCustomOptions: ExpressSwaggerCustomOptions = {}
+    const openApiExpressCustomOptions: ExpressSwaggerCustomOptions = {
+      swaggerOptions: {
+        // persistAuthorization: true,
+        // include cookie credentials in request
+        requestInterceptor: (req: { credentials: string }) => {
+          req.credentials = 'include'
+          return req
+        },
+      },
+    }
 
     const openApiDocument = SwaggerModule.createDocument(app, openApiConfig, openApiDocumentOptions)
     SwaggerModule.setup('api', app, openApiDocument, openApiExpressCustomOptions)

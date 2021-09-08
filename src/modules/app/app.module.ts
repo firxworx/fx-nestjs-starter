@@ -1,10 +1,12 @@
 import { Module, RequestMethod } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+import { APP_FILTER } from '@nestjs/core'
 import { LoggerModule } from 'nestjs-pino'
 
 import appConfig from 'src/config/app.config'
 import authConfig from 'src/config/auth.config'
 import awsConfig from 'src/config/aws.config'
+import { AnyExceptionFilter } from 'src/filters/any-exception.filter'
 import { AuthModule } from '../auth/auth.module'
 import { AwsModule } from '../aws/aws.module'
 
@@ -23,6 +25,7 @@ import { AppService } from './app.service'
     }),
     // @see - https://github.com/iamolegga/nestjs-pino#configuration
     LoggerModule.forRoot({
+      // @see - https://github.com/pinojs/pino-http#pinohttpopts-stream
       pinoHttp: [
         {
           level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
@@ -30,7 +33,7 @@ import { AppService } from './app.service'
           // useLevelLabels: true, // deprecated - use the formatters.level option instead
         },
       ],
-      exclude: [{ method: RequestMethod.ALL, path: 'health' }],
+      exclude: [{ method: RequestMethod.ALL, path: 'health' }], // healthcheck (tbd)
     }),
     DatabaseModule,
     AuthModule,
@@ -39,6 +42,6 @@ import { AppService } from './app.service'
     UiModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, { provide: APP_FILTER, useClass: AnyExceptionFilter }],
 })
 export class AppModule {}

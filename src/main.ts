@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core'
 import { ConfigService } from '@nestjs/config'
-import { ValidationPipe } from '@nestjs/common'
+import { HttpStatus, UnprocessableEntityException, ValidationError, ValidationPipe } from '@nestjs/common'
 import type { NestExpressApplication } from '@nestjs/platform-express'
 import { SwaggerModule, DocumentBuilder, SwaggerDocumentOptions, ExpressSwaggerCustomOptions } from '@nestjs/swagger'
 
@@ -11,7 +11,6 @@ import { Logger } from 'nestjs-pino'
 
 import { AppModule } from './modules/app/app.module'
 import { AppConfig } from './config/app.config'
-import { AnyExceptionFilter } from './filters/any-exception.filter'
 
 /**
  * Bootstrap the NestJS app.
@@ -21,7 +20,7 @@ import { AnyExceptionFilter } from './filters/any-exception.filter'
  */
 async function bootstrap(): Promise<NestExpressApplication> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    logger: false,
+    logger: false, // bufferLogs: true (refer to nestjs-pino readme)
   })
 
   const configService = app.get<ConfigService>(ConfigService)
@@ -66,8 +65,17 @@ async function bootstrap(): Promise<NestExpressApplication> {
   const globalPrefixValue = `${appConfig.basePath.replace(/^\/+/, '')}/${appConfig.apiVersion}`
   app.setGlobalPrefix(globalPrefixValue)
 
+  // @starter - the versioning feature is an alternative to using the global prefix to apply an app-wide version
+  // it enables controller-and-route-specific versioning - @see https://docs.nestjs.com/techniques/versioning
+  //
+  // app.enableVersioning({
+  //   type: VersioningType.URI,
+  // })
+
   // ensure the `onApplicationShutdown()` functions of providers are called if process receives a shutdown signal
   app.enableShutdownHooks()
+
+  // app.useGlobalInterceptors(new SerializerInterceptor())
 
   // use global validation pipe
   app.useGlobalPipes(
@@ -76,6 +84,18 @@ async function bootstrap(): Promise<NestExpressApplication> {
       transform: true,
       // forbidNonWhitelisted: true,
       // disableErrorMessages: true, // or make env config option
+      errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY, // 422
+      exceptionFactory: (errors: ValidationError[]) =>
+        new UnprocessableEntityException({
+          message: 'Unprocessable Entity',
+          errors: errors.reduce(
+            (acc, curr) => ({
+              ...acc,
+              [curr.property]: Object.values(curr.constraints ?? {}).join(', '),
+            }),
+            {},
+          ),
+        }),
     }),
   )
 
@@ -89,9 +109,6 @@ async function bootstrap(): Promise<NestExpressApplication> {
 
   // use cookie-parser express middleware to populate `req.cookies`
   app.use(cookieParser.default())
-
-  // use AnyExceptionFilter to log all unhandled exceptions and return a standardized json response format
-  app.useGlobalFilters(new AnyExceptionFilter())
 
   // conditionally use compression (express middleware) per app config
   if (appConfig.express.compression) {

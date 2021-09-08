@@ -1,4 +1,12 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common'
+import { getErrorMessage } from 'src/common/error-helpers'
+
+/**
+ * Type guard to help identify `HttpException` responses that are ts `Record`'s.
+ */
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null
+}
 
 /**
  * Filter that logs any unhandled exceptions and ensures a standardized JSON response.
@@ -17,16 +25,24 @@ export class AnyExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse()
     const request = ctx.getRequest()
 
-    const statusCode = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR
+    const status = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR
+    const message = getErrorMessage(exception)
 
-    const message = exception instanceof Error ? exception.message : String(exception)
+    // refer to exceptionFactory of ValidationPipe in `main.ts`
+    const exceptionResponse = exception instanceof HttpException && exception.getResponse()
+    const errors =
+      isRecord(exceptionResponse) && 'errors' in exceptionResponse && isRecord(exceptionResponse.errors)
+        ? exceptionResponse.errors
+        : undefined
+
     this.logger.error(
-      `<exception> status <${statusCode}> user ${request.user ? ` user <${request.user.email}>` : '<>'}: ${message}`,
+      `<exception> status <${status}>${request.user ? ` user <${request.user.email}>` : ''}: ${message}`,
     )
 
-    response.status(statusCode).json({
-      success: false,
-      statusCode,
+    response.status(status).json({
+      status,
+      message,
+      ...({ errors } ?? {}),
       timestamp: new Date().toISOString(),
       path: request.url,
     })

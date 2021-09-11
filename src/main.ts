@@ -4,13 +4,13 @@ import { HttpStatus, UnprocessableEntityException, ValidationError, ValidationPi
 import type { NestExpressApplication } from '@nestjs/platform-express'
 import { SwaggerModule, DocumentBuilder, SwaggerDocumentOptions, ExpressSwaggerCustomOptions } from '@nestjs/swagger'
 
+import { Logger } from 'nestjs-pino'
 import helmet from 'helmet'
 import * as cookieParser from 'cookie-parser'
 import compression from 'compression'
-import { Logger } from 'nestjs-pino'
 
 import { AppModule } from './modules/app/app.module'
-import { AppConfig } from './config/app.config'
+import type { AppConfig } from './config/app.config'
 
 /**
  * Bootstrap the NestJS app.
@@ -20,8 +20,12 @@ import { AppConfig } from './config/app.config'
  */
 async function bootstrap(): Promise<NestExpressApplication> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    logger: false, // bufferLogs: true (refer to nestjs-pino readme)
+    bufferLogs: true, // refer to nestjs-pino readme
   })
+
+  // nestjs-pino + pino provide an idiomatic nestjs logger that supports json log format
+  const logger = app.get(Logger)
+  app.useLogger(logger)
 
   const configService = app.get<ConfigService>(ConfigService)
   const appConfig = configService.get<AppConfig>('app')
@@ -29,10 +33,6 @@ async function bootstrap(): Promise<NestExpressApplication> {
   if (!appConfig) {
     throw new Error('Error resolving app config (undefined)')
   }
-
-  // use logger from nestjs-pino for json logs
-  const logger = app.get(Logger)
-  app.useLogger(logger)
 
   // @starter set openapi/swagger title, description, version, etc. @see - https://docs.nestjs.com/openapi/introduction
   if (appConfig.openApiDocs.enable) {
@@ -84,6 +84,7 @@ async function bootstrap(): Promise<NestExpressApplication> {
       transform: true,
       // forbidNonWhitelisted: true,
       // disableErrorMessages: true, // or make env config option
+      // transformOptions: { enableImplicitConversion: true },
       errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY, // 422
       exceptionFactory: (errors: ValidationError[]) =>
         new UnprocessableEntityException({
@@ -135,4 +136,4 @@ async function bootstrap(): Promise<NestExpressApplication> {
   return httpServer
 }
 
-bootstrap()
+bootstrap().catch((error) => console.error(error))

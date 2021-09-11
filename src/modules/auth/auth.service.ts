@@ -11,13 +11,13 @@ import { JwtService } from '@nestjs/jwt'
 import * as bcrypt from 'bcryptjs'
 
 import { UsersService } from '../users/users.service'
-import { PostgresErrorCode } from '../database/postgres-error-code.enum'
+import { PostgresErrorCode } from '../database/constants/postgres-error-code.enum'
 
 import { RegisterUserDto } from './dto/register-user.dto'
 import type { TokenPayload } from './types/token-payload.interface'
 import { AuthConfig } from '../../config/auth.config'
 import { User } from '../users/entities/user.entity'
-import { isQueryFailedError } from '../database/types/guards/is-query-failed-error.guard'
+import { isQueryFailedError } from '../database/types/type-guards/is-query-failed-error.guard'
 import { getErrorMessage } from '../../common/error-helpers'
 
 @Injectable()

@@ -22,7 +22,7 @@ export class User {
   readonly updatedAt!: Date
 
   @Column('varchar', { unique: true })
-  readonly email!: string | null
+  readonly email!: string
 
   @Column('varchar')
   readonly name!: string | null

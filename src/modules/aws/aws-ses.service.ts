@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { SESClient, SendEmailCommand, SendTemplatedEmailCommand } from '@aws-sdk/client-ses'
 import { ConfigService } from '@nestjs/config'
-import { AwsConfig } from 'src/config/aws.config'
-import { getErrorStack } from 'src/common/error-helpers'
+import { AwsConfig } from '../../config/aws.config'
+import { getErrorStack } from '../../common/error-helpers'
 
 // basic implementation for aws ses send email using aws-sdk v3 client
 

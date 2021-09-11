@@ -1,5 +1,5 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common'
-import { getErrorMessage } from 'src/common/error-helpers'
+import { getErrorMessage } from '../common/error-helpers'
 
 /**
  * Type guard to help identify `HttpException` responses that are ts `Record`'s.

@@ -9,6 +9,7 @@ import {
   ClassSerializerInterceptor,
   UseInterceptors,
   Logger,
+  HttpStatus,
 } from '@nestjs/common'
 import { ApiResponse, ApiTags } from '@nestjs/swagger'
 
@@ -36,7 +37,7 @@ export class AuthController {
   /**
    * Handle requests to register a new user.
    */
-  @ApiResponse({ status: 201, description: 'Success registering new user' })
+  @ApiResponse({ status: HttpStatus.CREATED, description: 'Success registering new user' })
   @Post('register')
   async register(@Body() registerUserDto: RegisterUserDto) {
     // @starter - consider restricting user registration (e.g. to admin role, etc) and/or sending verification email, etc.
@@ -48,11 +49,11 @@ export class AuthController {
   /**
    * Handle requests to change the authenticated user's password.
    */
-  @ApiResponse({ status: 204, description: 'Success changing password' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Success changing password' })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @UseGuards(JwtAuthGuard)
   @Post('password')
-  @HttpCode(204) // override NestJS default 201
+  @HttpCode(HttpStatus.NO_CONTENT) // override NestJS default 201
   async changePassword(@GetUser() user: User, @Body() dto: ChangePasswordDto) {
     return this.usersService.changePassword(user.id, dto.oldPassword, dto.newPassword)
   }
@@ -60,9 +61,9 @@ export class AuthController {
   /**
    * Handle requests to authenticate a user's access token, returning essential properties of the `User`.
    */
-  @ApiResponse({ status: 200, description: 'Authentication success' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Authentication success' })
   @UseGuards(JwtAuthGuard)
-  @HttpCode(200) // override NestJS default 201
+  @HttpCode(HttpStatus.OK)
   @Get()
   authenticate(@Req() request: RequestWithUser): Pick<User, 'uuid' | 'email' | 'name' | 'timeZone'> {
     return {
@@ -76,9 +77,12 @@ export class AuthController {
   /**
    * Respond to valid sign-in requests with cookies with a new access token + refresh token.
    */
-  @ApiResponse({ status: 200, description: 'Sign-in successful. Set-Cookie with access token + refresh token.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Sign-in successful. Set-Cookie with access token + refresh token.',
+  })
   @UseGuards(LocalAuthGuard)
-  @HttpCode(200) // override NestJS default 201
+  @HttpCode(HttpStatus.OK) // override nestjs default 201
   @Post('sign-in')
   async signIn(@Req() request: RequestWithUser) {
     const { user } = request
@@ -96,10 +100,13 @@ export class AuthController {
   /**
    * Respond to a valid sign-out request by setting new cookie values that wipe existing access + refresh token cookies.
    */
-  @ApiResponse({ status: 204, description: 'Sign-out successful. Set-Cookie to expire access token + refresh token.' })
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'Sign-out successful. Set-Cookie to expire access token + refresh token.',
+  })
   @UseGuards(JwtAuthGuard)
   @Post('sign-out')
-  @HttpCode(204) // override NestJS default 201
+  @HttpCode(HttpStatus.NO_CONTENT) // override nestjs default 201
   async signOut(@Req() request: RequestWithUser): Promise<void> {
     await this.usersService.removeRefreshToken(request.user.id)
     request.res?.setHeader('Set-Cookie', this.authenticationService.getCookiesForLogOut())
@@ -108,9 +115,9 @@ export class AuthController {
   /**
    * Respond to a valid refresh request with a cookie containing a new signed JWT access token.
    */
-  @ApiResponse({ status: 200, description: 'Refresh successful. Set-Cookie with new access token.' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Refresh successful. Set-Cookie with new access token.' })
   @UseGuards(JwtRefreshGuard)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @Get('refresh')
   refresh(@Req() request: RequestWithUser) {
     const accessTokenCookie = this.authenticationService.getCookieWithJwtAccessToken(request.user.id)

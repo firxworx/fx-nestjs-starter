@@ -1,3 +1,4 @@
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger'
 import { Exclude } from 'class-transformer'
 import { Column, Index, Generated, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm'
 
@@ -11,21 +12,26 @@ import { Column, Index, Generated, CreateDateColumn, UpdateDateColumn, PrimaryGe
  * @see {@link https://wiki.postgresql.org/wiki/Don't_Do_This#Don.27t_use_timestamp_.28without_time_zone.29}
  */
 export abstract class Base {
+  @ApiHideProperty()
   @Exclude()
   @PrimaryGeneratedColumn()
   readonly id!: number
 
+  @ApiProperty()
   @Index({ unique: true })
   @Generated('uuid')
   @Column()
   readonly uuid!: string
 
+  @Exclude()
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   readonly createdAt!: Date
 
+  @Exclude()
   @UpdateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   readonly updatedAt!: Date
 
+  @Exclude()
   @Column({ type: 'boolean', default: true })
   isActive!: boolean
 }

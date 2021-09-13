@@ -1,5 +1,5 @@
 import { FindConditions, FindManyOptions } from 'typeorm'
-import { AbstractPaginationParamsDto } from '../dto/abstract-pagination-params.dto'
+import { PaginationParamsAbstractDto } from '../dto/pagination-params.abstract.dto'
 
 const DEFAULT_ROWS_PER_PAGE = 100
 // const MAX_ROWS_PER_PAGE = 1000
@@ -23,7 +23,7 @@ export interface PaginationFindParams<T> extends Required<Pick<FindManyOptions<T
  * @returns
  */
 export const paginationFindParamsBuilder = <T>(
-  paramsDto: AbstractPaginationParamsDto, // Record<string, unknown> & AbstractPaginationParamsDto,
+  paramsDto: PaginationParamsAbstractDto, // Record<string, unknown> & AbstractPaginationParamsDto,
 ): PaginationFindParams<T> => {
   // per typeorm repository api the properties of object passed to `where` are joined via logical AND
   const whereClause = paramsDto.filter

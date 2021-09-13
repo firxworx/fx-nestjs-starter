@@ -28,11 +28,11 @@ import { Type } from 'class-transformer'
  *
  * @WIP @todo AbstractPaginationParamsDto WIP
  */
-export abstract class AbstractPaginationParamsDto {
+export abstract class PaginationParamsAbstractDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsObject()
-  filter?: any = {}
+  readonly filter?: any = {}
 
   @ApiPropertyOptional({
     description: 'sort order',
@@ -41,7 +41,7 @@ export abstract class AbstractPaginationParamsDto {
   @IsOptional()
   @IsObject()
   // @IsEnum(SqlOrder) // @todo make actual validator for sort here
-  sort?: any = {}
+  readonly sort?: any = {}
 
   @ApiPropertyOptional({
     minimum: 0,
@@ -51,7 +51,7 @@ export abstract class AbstractPaginationParamsDto {
   @IsNumber()
   @Min(0)
   @Type(() => Number)
-  offset?: number
+  readonly offset?: number
 
   @ApiPropertyOptional({
     minimum: 1,
@@ -60,5 +60,5 @@ export abstract class AbstractPaginationParamsDto {
   @IsNumber()
   @Min(1)
   @Type(() => Number)
-  limit?: number
+  readonly limit?: number
 }

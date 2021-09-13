@@ -3,20 +3,18 @@ import { Exclude, Type } from 'class-transformer'
 import { IsArray, IsNumber } from 'class-validator'
 
 /**
- * Response DTO for paginated responses that includes a `data` array of type `T` and a `totalCount`.
+ * Response DTO for a paginated response with properties for `data` (an array with
+ * items of type `T`) and `count`.
  */
 export class PaginatedResponseDto<T> {
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  constructor(type: Function, data: Array<T>, totalCount: number) {
+  constructor(type: { new (): T }, data: Array<T>, count: number) {
     this.type = type
     this.data = data
-    this.totalCount = totalCount
+    this.count = count
   }
-  // constructor(private type: { new (): T }) {}
 
   @Exclude()
-  private type: Function // eslint-disable-line @typescript-eslint/ban-types
-  // private type: new (): T
+  private type: { new (): T }
 
   @ApiProperty({ isArray: true })
   @IsArray()
@@ -26,8 +24,8 @@ export class PaginatedResponseDto<T> {
   readonly data!: Array<T>
 
   @ApiProperty({
-    description: 'Total number of records (rows) in data.',
+    description: 'Total number of records (rows) in data',
   })
   @IsNumber()
-  readonly totalCount!: number
+  readonly count!: number
 }

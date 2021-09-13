@@ -23,14 +23,17 @@ export abstract class Base {
   @Column()
   readonly uuid!: string
 
+  @ApiHideProperty()
   @Exclude()
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   readonly createdAt!: Date
 
+  @ApiHideProperty()
   @Exclude()
   @UpdateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   readonly updatedAt!: Date
 
+  @ApiHideProperty()
   @Exclude()
   @Column({ type: 'boolean', default: true })
   isActive!: boolean

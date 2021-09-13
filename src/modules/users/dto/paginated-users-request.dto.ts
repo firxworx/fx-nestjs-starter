@@ -1,3 +1,3 @@
-import { AbstractPaginationParamsDto } from '../../database/dto/abstract-pagination-params.dto'
+import { PaginationParamsAbstractDto } from '../../database/dto/pagination-params.abstract.dto'
 
-export class PaginatedUsersRequestDto extends AbstractPaginationParamsDto {}
+export class PaginatedUsersRequestDto extends PaginationParamsAbstractDto {}

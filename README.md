@@ -90,9 +90,96 @@ yarn start:dev
 
 ## TypeORM
 
-```sh
-yarn run migration:generate InitialMigration
+The TypeORM configuration file for this project is: `src/ormconfig.ts`.
+
+The conventions are:
+
+- entity filename extension: `*.entity.ts`
+- subscriber filename extension: `*.subscriber.ts`
+
+
+TypeORM will pick up `ormconfig.{json,js,ts}` in a project's root folder however placing it there can.
+
+TYPEORM_CONNECTION (corresponds to the `type` property in an `ormconfig` file),
+TYPEORM_HOST,
+TYPEORM_PORT,
+TYPEORM_USERNAME,
+TYPEORM_PASSWORD,
+TYPEORM_DATABASE,
+
+```ts
+    "typeorm": "ts-node -r tsconfig-paths/register node_modules/typeorm/cli.js --config src/ormconfig.ts",
+    "migration:generate": "yarn run typeorm migration:generate -n",
+    "migration:create": "yarn run typeorm migration:create -n",
+    "migration:run": "yarn run typeorm migration:run",
+    "migration:revert": "yarn run typeorm migration:revert",
 ```
+
+
+### Generating migrations
+
+After adding or revising entity classes, run the following command to generate migrations to update the database schema:
+
+```sh
+# replace "MigrationName" with a short and descriptive name for the migration (e.g. "UserTable")
+yarn migration:generate MigrationName
+```
+
+The generated file will be added to `src/modules/database/migrations` per the config in `src/ormconfig.ts`.
+
+### Creating migrations
+
+To create a new empty migration with boilerplate/scaffold code, run:
+
+```sh
+# replace "MigrationName" with a short and descriptive name for the migration
+yarn migration:create MigrationName
+```
+
+The newly created migration will contain `up()` and `down()` methods awaiting your implementation. TypeORM calls `up()` to perform the migration and `down()` to revert it. Each method is passed an instance of `QueryRunner` that can then be used to build migration queries by hand, or you can use the migration API.
+
+For example: 
+
+```ts
+await queryRunner.query(`ALTER TABLE "user" RENAME "name" to "fullName"`);
+```
+
+### Running migrations
+
+To run migrations via the cli:
+
+```sh
+yarn migration:run
+```
+
+To run migrations in code, call the `runMigrations()` method on an instance of the typeorm Connection class (which reflects a connection to the database) in an async method:
+
+```sh
+await connection.runMigrations()
+```
+
+Also refer to the `migrationsRun` property in `src/ormconfig.ts`. When set to `true`, typeorm will automatically run migrations when the app is started and establishes a connection to the database.
+
+### Reverting migrations
+
+To revert migrations:
+
+```sh
+yarn migration:revert
+```
+
+## OpenAPI/Swager properties
+
+The opt-in nestjs cli plugin packaged with `@nestjs/swagger` is enabled for this project in `nest-cli.json`.
+
+The plugin takes care of automatically adding OpenAPI/Swagger decorators to DTO's and entities, and automatically defining a number of properties. This greatly reduces the redundancy and maintenance burden involved with needing to separately define properties for both nestjs and OpenAPI/Swagger.
+
+For example, among the numerous features and behaviours of this plugin, is that it will automatically annotate all DTO + entity fields with `@ApiProperty` unless they are decorated with `@ApiHideProperty`.
+
+The plugin adheres to nestjs conventions and only analyzes files with the following extensions: `.dto.ts` and `.entity.ts`.
+
+Refer to the docs for a complete description of the plugin's behaviour: <https://docs.nestjs.com/openapi/cli-plugin>.
+
 
 ## Running the app
 

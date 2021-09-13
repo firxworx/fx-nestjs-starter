@@ -1,20 +1,18 @@
 import { Module } from '@nestjs/common'
-import { TypeOrmModule } from '@nestjs/typeorm'
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm'
 
 import ormconfig from '../../ormconfig'
 
-// note: depending on your setup you may need to import ormconfig via require()
-// import ormconfig = require('../../ormconfig')
+const typeOrmModuleOptions: TypeOrmModuleOptions = {
+  ...ormconfig,
+
+  // automatically load entities that are injected to modules via `TypeOrmModule.forFeature()`
+  // refer to notes in ormconfig.ts header comment re webpack - this setting may be useful for projects in a monorepo
+  autoLoadEntities: false,
+}
 
 @Module({
-  imports: [
-    TypeOrmModule.forRoot({
-      ...ormconfig,
-
-      // automatically load entities that are injected to modules via `TypeOrmModule.forFeature()` (refer to notes in ormconfig.ts header comment)
-      autoLoadEntities: false,
-    }),
-  ],
+  imports: [TypeOrmModule.forRoot(typeOrmModuleOptions)],
   exports: [],
 })
 export class DatabaseModule {}
@@ -44,7 +42,7 @@ TypeOrmModule.forRootAsync({
 Note that an `import: [ConfigModule]` entry is not required alongside the `inject: ...` entry in the above example because
 in the case of this project, ConfigModule is already imported globally and is imported in the `AppModule` before `DatabaseModule`.
 
-----
+--
 
 If you choose to use a typeorm-compatible ormconfig.{js,ts,json} in project root instead of under `src/` then it will
 be automatically detected by typeorm.
@@ -61,7 +59,7 @@ approach as covered in the nestjs docs (in `TypeOrmModule.forRootAsync()` method
 useFactory: async () => Object.assign(await getConnectionOptions(), { autoLoadEntities: true, })
 ```
 
-----
+--
 
 Finally, typeorm recognizes a number of environment variables prefixed with `TYPEORM_`.
 

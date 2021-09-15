@@ -3,20 +3,28 @@ import {
   DEFAULT_PORT,
   DEFAULT_API_VERSION,
   DEFAULT_BASE_PATH,
-  DEFAULT_THROTTLE_LIMIT,
-  DEFAULT_THROTTLE_TTL,
+  DEFAULT_THROTTLER_LIMIT,
+  DEFAULT_THROTTLER_TTL,
 } from './defaults'
+import { envFlagValue } from './helpers'
 
 export interface AppConfig {
   origin: string
   port: number
   basePath: string
   apiVersion: string
-  throttleTTL: number
-  throttleLimit: number
   express: {
     compression: boolean
     trustProxy: boolean
+  }
+  /** Config for @nestjs/throttler. */
+  throttler: {
+    /** Enable the throttler powered by `@nestjs/throttler`. */
+    enabled: boolean
+    /** Number of seconds that each request is stored. */
+    throttleTTL: number
+    /** Number of requests within the TTL limit. */
+    throttleLimit: number
   }
   openApiDocs: {
     enabled: boolean
@@ -24,7 +32,7 @@ export interface AppConfig {
 }
 
 /** Resolve the PORT for this API. */
-const PORT = process.env.PORT ? +process.env.PORT : DEFAULT_PORT
+const PORT = process.env.PORT ? Number(process.env.PORT) : DEFAULT_PORT
 
 /**
  * Return the CORS origin for this environment per `NODE_ENV`.
@@ -69,11 +77,14 @@ export default registerAs('app', (): AppConfig => {
     port: PORT,
     basePath: process.env.BASE_PATH ?? DEFAULT_BASE_PATH,
     apiVersion: process.env.API_VERSION ?? DEFAULT_API_VERSION,
-    throttleTTL: process.env.THROTTLE_TTL ? +process.env.THROTTLE_TTL : DEFAULT_THROTTLE_TTL,
-    throttleLimit: process.env.THROTTLE_LIMIT ? +process.env.THROTTLE_LIMIT : DEFAULT_THROTTLE_LIMIT,
     ...getExpressConfig(),
+    throttler: {
+      enabled: envFlagValue(process.env.THROTTLER_ENABLED_FLAG),
+      throttleTTL: process.env.THROTTLER_TTL ? Number(process.env.THROTTLER_TTL) : DEFAULT_THROTTLER_TTL,
+      throttleLimit: process.env.THROTTLER_LIMIT ? Number(process.env.THROTTLER_LIMIT) : DEFAULT_THROTTLER_LIMIT,
+    },
     openApiDocs: {
-      enabled: Number(process.env.OPENAPI_ENABLED_FLAG ?? 0) === 1,
+      enabled: envFlagValue(process.env.OPENAPI_ENABLED_FLAG),
     },
   }
 })

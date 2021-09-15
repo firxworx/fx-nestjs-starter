@@ -1,6 +1,7 @@
-import { ApiExtraModels, ApiOkResponse, ApiResponseOptions, getSchemaPath } from '@nestjs/swagger'
+import { ApiExtraModels, ApiOkResponse, ApiQuery, ApiResponseOptions, getSchemaPath } from '@nestjs/swagger'
 import { applyDecorators, Type } from '@nestjs/common'
 
+import { PaginatedUsersRequestDto } from 'src/modules/users/dto/paginated-users-request.dto'
 // import { PaginationQueryFilterParams } from '../../types/pagination.types'
 
 /**
@@ -18,6 +19,7 @@ import { applyDecorators, Type } from '@nestjs/common'
  */
 export const ApiPaginatedResponse = <ItemDto extends Type<unknown>>(itemDto: ItemDto, options?: ApiResponseOptions) => {
   return applyDecorators(
+    ApiQuery({ type: PaginatedUsersRequestDto }),
     ApiExtraModels(itemDto),
     ApiOkResponse({
       ...(options ?? {}),

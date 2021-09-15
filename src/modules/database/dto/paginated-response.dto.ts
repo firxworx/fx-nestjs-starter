@@ -3,8 +3,7 @@ import { Exclude, Type } from 'class-transformer'
 import { IsArray, IsNumber } from 'class-validator'
 
 /**
- * Response DTO for a paginated response with properties for `data` (an array with
- * items of type `T`) and `count`.
+ * Response DTO for a paginated response with a `data` array and `count`.
  */
 export class PaginatedResponseDto<T> {
   constructor(type: { new (): T }, data: Array<T>, count: number) {

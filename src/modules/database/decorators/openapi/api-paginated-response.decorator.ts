@@ -1,4 +1,4 @@
-import { ApiOkResponse, getSchemaPath } from '@nestjs/swagger'
+import { ApiExtraModels, ApiOkResponse, ApiResponseOptions, getSchemaPath } from '@nestjs/swagger'
 import { applyDecorators, Type } from '@nestjs/common'
 
 /**
@@ -10,13 +10,15 @@ import { applyDecorators, Type } from '@nestjs/common'
  * With the plugin enabled, `PaginatedResponseDto` and your `ItemDto` do not need to be explicitly introduced to
  * OpenAPI/Swagger by decorating your controller class with the `ApiExtraModels()` decorator from `@nestjs/swagger`.
  *
- * Usage: `@ApiPaginatedResponse(EntitySingleItemDto)`.
+ * Usage: `@ApiPaginatedResponse<EntitySingleItemDto>(EntitySingleItemDto)`.
  *
  * Credit to @hakimio (github) + Chau Tran (nartc.me) for this approach.
  */
-export const ApiPaginatedResponse = <ItemDto extends Type<unknown>>(itemDto: ItemDto) => {
+export const ApiPaginatedResponse = <ItemDto extends Type<unknown>>(itemDto: ItemDto, options?: ApiResponseOptions) => {
   return applyDecorators(
+    ApiExtraModels(itemDto),
     ApiOkResponse({
+      ...(options ?? {}),
       schema: {
         allOf: [
           {
@@ -45,7 +47,7 @@ If you do not use the opt-in cli plugin for nestjs, you must:
 */
 
 /*
-@future - consider next/previous properties ...
+@starter consider if your app requires next/previous properties ...
   next: {
     type: 'string',
     nullable: true,

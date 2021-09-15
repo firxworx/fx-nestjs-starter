@@ -90,6 +90,8 @@ yarn start:dev
 
 ## TypeORM
 
+@todo - revised package.json so name is required to be added - either revert + test or document here
+
 The TypeORM configuration file for this project is: `src/ormconfig.ts`.
 
 The conventions are:
@@ -168,17 +170,23 @@ To revert migrations:
 yarn migration:revert
 ```
 
-## OpenAPI/Swager properties
+## OpenAPI/Swagger
+
+OpenAPI/Swagger can be conditionally enabled by setting the `OPENAPI_ENABLED_FLAG` environment variable to `1`. It is read in by `config/app.config.ts` and used in `src/main.ts`.
+
+If enabled, the Swagger UI is available at the URL path: `/api` (the path does not include the global prefix).
+
+Note that the Swagger UI + Swagger Editor does not currently support cookie authentication: <https://github.com/swagger-api/swagger-js/issues/1163>
 
 The opt-in nestjs cli plugin packaged with `@nestjs/swagger` is enabled for this project in `nest-cli.json`.
 
-The plugin takes care of automatically adding OpenAPI/Swagger decorators to DTO's and entities, and automatically defining a number of properties. This greatly reduces the redundancy and maintenance burden involved with needing to separately define properties for both nestjs and OpenAPI/Swagger.
+The plugin automatically adds OpenAPI/Swagger decorators to DTO's and entities, and it can pull values from `class-validator` decorators. It greatly reduces the maintenance burden and overall redundancy involved separately defining properties for both nestjs functionality and OpenAPI/Swagger.
 
-For example, among the numerous features and behaviours of this plugin, is that it will automatically annotate all DTO + entity fields with `@ApiProperty` unless they are decorated with `@ApiHideProperty`.
+Among the various features and behaviours of this plugin: it will automatically annotate all DTO + entity fields with `@ApiProperty` unless they are decorated with `@ApiHideProperty`.
 
 The plugin adheres to nestjs conventions and only analyzes files with the following extensions: `.dto.ts` and `.entity.ts`.
 
-Refer to the docs for a complete description of the plugin's behaviour: <https://docs.nestjs.com/openapi/cli-plugin>.
+Refer to the docs for more on the plugin, available decorators, and its configuration options: <https://docs.nestjs.com/openapi/cli-plugin>.
 
 
 ## Running the app

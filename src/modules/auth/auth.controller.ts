@@ -11,7 +11,15 @@ import {
   Logger,
   HttpStatus,
 } from '@nestjs/common'
-import { ApiResponse, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBasicAuth,
+  ApiCookieAuth,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger'
 
 import { RegisterUserDto } from './dto/register-user.dto'
 import { ChangePasswordDto } from './dto/change-password.dto'
@@ -37,10 +45,10 @@ export class AuthController {
   /**
    * Handle requests to register a new user.
    */
-  @ApiResponse({ status: HttpStatus.CREATED, description: 'Success registering new user' })
+  @ApiCreatedResponse({ description: 'Success registering new user' })
   @Post('register')
   async register(@Body() registerUserDto: RegisterUserDto) {
-    // @starter - consider restricting user registration (e.g. to admin role, etc) and/or sending verification email, etc.
+    // @starter - consider restricting user registration (e.g. to admin role, etc), sending a verification email, etc.
     this.logger.log(`User registration request: <${registerUserDto.email}>`)
 
     return this.authenticationService.registerUserOrThrow(registerUserDto)
@@ -49,8 +57,9 @@ export class AuthController {
   /**
    * Handle requests to change the authenticated user's password.
    */
-  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Success changing password' })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
+  @ApiCookieAuth()
+  @ApiNoContentResponse({ description: 'Success changing password' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @UseGuards(JwtAuthGuard)
   @Post('password')
   @HttpCode(HttpStatus.NO_CONTENT) // override NestJS default 201
@@ -61,7 +70,8 @@ export class AuthController {
   /**
    * Handle requests to authenticate a user's access token, returning essential properties of the `User`.
    */
-  @ApiResponse({ status: HttpStatus.OK, description: 'Authentication success' })
+  @ApiCookieAuth()
+  @ApiOkResponse({ status: HttpStatus.OK, description: 'Authentication success' })
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Get()
@@ -77,8 +87,8 @@ export class AuthController {
   /**
    * Respond to valid sign-in requests with cookies with a new access token + refresh token.
    */
-  @ApiResponse({
-    status: HttpStatus.OK,
+  @ApiBasicAuth()
+  @ApiOkResponse({
     description: 'Sign-in successful. Set-Cookie with access token + refresh token.',
   })
   @UseGuards(LocalAuthGuard)
@@ -100,8 +110,8 @@ export class AuthController {
   /**
    * Respond to a valid sign-out request by setting new cookie values that wipe existing access + refresh token cookies.
    */
-  @ApiResponse({
-    status: HttpStatus.NO_CONTENT,
+  @ApiCookieAuth()
+  @ApiNoContentResponse({
     description: 'Sign-out successful. Set-Cookie to expire access token + refresh token.',
   })
   @UseGuards(JwtAuthGuard)
@@ -115,7 +125,8 @@ export class AuthController {
   /**
    * Respond to a valid refresh request with a cookie containing a new signed JWT access token.
    */
-  @ApiResponse({ status: HttpStatus.OK, description: 'Refresh successful. Set-Cookie with new access token.' })
+  @ApiCookieAuth()
+  @ApiOkResponse({ status: HttpStatus.OK, description: 'Refresh successful. Set-Cookie with new access token.' })
   @UseGuards(JwtRefreshGuard)
   @HttpCode(HttpStatus.OK)
   @Get('refresh')

@@ -1,6 +1,8 @@
 import { ApiExtraModels, ApiOkResponse, ApiResponseOptions, getSchemaPath } from '@nestjs/swagger'
 import { applyDecorators, Type } from '@nestjs/common'
 
+// import { PaginationQueryFilterParams } from '../../types/pagination.types'
+
 /**
  * Custom OpenAPI/Swagger decorator to document paginated API responses.
  *
@@ -35,6 +37,10 @@ export const ApiPaginatedResponse = <ItemDto extends Type<unknown>>(itemDto: Ite
         ],
       },
     }),
+    // ApiQuery({ name: 'filter', type: ..., required: false }),
+    // ApiQuery({ name: 'sort', type: ..., required: false }),
+    // ApiQuery({ name: 'offset', type: Number, required: false }),
+    // ApiQuery({ name: 'limit', type: Number, required: false }),
   )
 }
 

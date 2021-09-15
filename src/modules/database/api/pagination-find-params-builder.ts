@@ -4,13 +4,6 @@ import { PaginationParamsAbstractDto } from '../dto/pagination-params.abstract.d
 const DEFAULT_ROWS_PER_PAGE = 100
 // const MAX_ROWS_PER_PAGE = 1000
 
-// export interface PaginatedParamsDto extends AbstractPaginationParamsDto {}
-
-/*
-note --
-(alias) type FindConditions<T> = { [P in keyof T]?: FindConditions<T[P]> | FindOperator<FindConditions<T[P]>> | undefined; }
-*/
-
 export interface PaginationFindParams<T> extends Required<Pick<FindManyOptions<T>, 'skip' | 'take'>> {
   where?: FindConditions<T> // FindManyOptions<T>['where'] // FindConditions<T> | Array<FindConditions<T>>
   order?: FindManyOptions<T>['order']
@@ -23,16 +16,16 @@ export interface PaginationFindParams<T> extends Required<Pick<FindManyOptions<T
  * @returns
  */
 export const paginationFindParamsBuilder = <T>(
-  paramsDto: PaginationParamsAbstractDto, // Record<string, unknown> & AbstractPaginationParamsDto,
+  paramsDto: PaginationParamsAbstractDto<T>, // Record<string, unknown> & AbstractPaginationParamsDto,
 ): PaginationFindParams<T> => {
-  // per typeorm repository api the properties of object passed to `where` are joined via logical AND
-  const whereClause = paramsDto.filter
-  const orderByClause: any = paramsDto.sort
+  // per the typeorm repository api, the properties of  `where` object passed are joined via logical AND
+  const whereClause = paramsDto.filter ?? {} // const whereClause: PaginationFindParams<T>['where'] = paramsDto.filter ?? {}
+  const orderByClause: PaginationFindParams<T>['order'] = paramsDto.sort ?? {}
 
   return {
     where: whereClause,
     order: {
-      ...(orderByClause ?? {}),
+      ...orderByClause,
     },
     skip: paramsDto.offset ?? 0,
     take: paramsDto.limit ?? DEFAULT_ROWS_PER_PAGE,

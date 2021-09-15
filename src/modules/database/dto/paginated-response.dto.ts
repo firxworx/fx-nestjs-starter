@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiResponseProperty } from '@nestjs/swagger'
 import { Exclude, Type } from 'class-transformer'
 import { IsArray, IsNumber } from 'class-validator'
 
@@ -15,16 +15,14 @@ export class PaginatedResponseDto<T> {
   @Exclude()
   private type: { new (): T }
 
-  @ApiProperty({ isArray: true })
+  @ApiResponseProperty() // @ApiProperty({ isArray: true })
   @IsArray()
   @Type((options) => {
     return (options?.newObject as PaginatedResponseDto<T>)?.type
   })
   readonly data!: Array<T>
 
-  @ApiProperty({
-    description: 'Total number of records (rows) in data',
-  })
+  @ApiResponseProperty() // {escription: 'Total number of records (rows) in data',}
   @IsNumber()
   readonly count!: number
 }

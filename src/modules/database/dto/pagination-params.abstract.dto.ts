@@ -1,16 +1,13 @@
 import { IsNumber, Min, IsOptional, IsObject } from 'class-validator'
 import { ApiPropertyOptional } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-
-// import { SqlOrder } from '../constants/sql-order.enum'
+import { PaginationQueryFilterParams, PaginationQuerySortParams } from '../types/pagination.types'
 
 // @IsDefined()
 // @IsNotEmptyObject()
 // @IsObject()
 // @ValidateNested()
 // @Type(() => MultiLanguageDTO)
-
-// export abstract class AbstractEntity<DTO extends AbstractDto = AbstractDto> {
 
 /**
  * Abstract DTO class for Pagination-related parameters.
@@ -27,21 +24,27 @@ import { Type } from 'class-transformer'
  * `posts?filter[author]=sally&filter[tag]=news&sort[postedAt]=desc&offset=0&limit=25`
  *
  * @WIP @todo AbstractPaginationParamsDto WIP
+ * @see PaginatedResponseDto
  */
-export abstract class PaginationParamsAbstractDto {
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsObject()
-  readonly filter?: any = {}
-
+export abstract class PaginationParamsAbstractDto<T> {
   @ApiPropertyOptional({
-    description: 'sort order',
-    // enum: SqlOrder,
+    description: 'pagination filter params',
+    // type: 'object',
+    // additionalProperties: true,
   })
   @IsOptional()
   @IsObject()
-  // @IsEnum(SqlOrder) // @todo make actual validator for sort here
-  readonly sort?: any = {}
+  readonly filter?: PaginationQueryFilterParams<T>
+
+  @ApiPropertyOptional({
+    description: 'sort order',
+    // type: 'object',
+    // additionalProperties: true,
+  })
+  @IsOptional()
+  @IsObject()
+  // @todo make actual validator for sort here - PaginationQuerySortParams<T>??
+  readonly sort?: PaginationQuerySortParams<T>
 
   @ApiPropertyOptional({
     minimum: 0,

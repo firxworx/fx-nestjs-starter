@@ -19,7 +19,7 @@ export interface AppConfig {
     trustProxy: boolean
   }
   openApiDocs: {
-    enable: boolean
+    enabled: boolean
   }
 }
 
@@ -73,7 +73,7 @@ export default registerAs('app', (): AppConfig => {
     throttleLimit: process.env.THROTTLE_LIMIT ? +process.env.THROTTLE_LIMIT : DEFAULT_THROTTLE_LIMIT,
     ...getExpressConfig(),
     openApiDocs: {
-      enable: true,
+      enabled: Number(process.env.OPENAPI_ENABLED_FLAG ?? 0) === 1,
     },
   }
 })

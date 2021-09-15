@@ -34,21 +34,36 @@ async function bootstrap(): Promise<NestExpressApplication> {
     throw new Error('Error resolving app config (undefined)')
   }
 
+  // the global prefix value does not begin with a slash so it is removed via regex from the basePath (as obtained from env or `src/config/defaults`) if present
+  const globalPrefixValue = `${appConfig.basePath.replace(/^\/+/, '')}/${appConfig.apiVersion}`
+  app.setGlobalPrefix(globalPrefixValue)
+
   // @starter set openapi/swagger title, description, version, etc. @see - https://docs.nestjs.com/openapi/introduction
-  if (appConfig.openApiDocs.enable) {
+  // note cookies are not supported in the browser 'try it' ui though you can publish to https://app.swaggerhub.com/search
+  if (appConfig.openApiDocs.enabled) {
     logger.log('Enabling swagger')
+
     const openApiConfig = new DocumentBuilder()
       .setTitle('Project API')
-      .setDescription('Desc')
+      .setDescription('REST API powered by NestJS.')
       .setVersion('0.1.0')
-      // .addTag('tagName')
-      // .addBearerAuth()
+      .addCookieAuth('Authorization', {
+        name: 'Authorization',
+        description: 'Authorization token (JWT)',
+        type: 'apiKey',
+      })
+      // .addCookieAuth('Refresh', {
+      //   name: 'Refresh',
+      //   description: 'Refresh token (JWT)',
+      //   type: 'apiKey',
+      // })
+      .addBasicAuth()
       .build()
 
     const openApiDocumentOptions: SwaggerDocumentOptions = {}
     const openApiExpressCustomOptions: ExpressSwaggerCustomOptions = {
       swaggerOptions: {
-        // persistAuthorization: true,
+        persistAuthorization: true,
         // include cookie credentials in request
         requestInterceptor: (req: { credentials: string }) => {
           req.credentials = 'include'
@@ -60,10 +75,6 @@ async function bootstrap(): Promise<NestExpressApplication> {
     const openApiDocument = SwaggerModule.createDocument(app, openApiConfig, openApiDocumentOptions)
     SwaggerModule.setup('api', app, openApiDocument, openApiExpressCustomOptions)
   }
-
-  // the global prefix value does not begin with a slash so it is removed via regex from the basePath (as obtained from env or `src/config/defaults`) if present
-  const globalPrefixValue = `${appConfig.basePath.replace(/^\/+/, '')}/${appConfig.apiVersion}`
-  app.setGlobalPrefix(globalPrefixValue)
 
   // @starter - the versioning feature is an alternative to using the global prefix to apply an app-wide version
   // it enables controller-and-route-specific versioning - @see https://docs.nestjs.com/techniques/versioning

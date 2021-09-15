@@ -1,6 +1,6 @@
 import { Module, RequestMethod } from '@nestjs/common'
-import { ConfigModule } from '@nestjs/config'
-import { APP_FILTER } from '@nestjs/core'
+import { ConfigModule, ConfigService } from '@nestjs/config'
+import { APP_FILTER, APP_GUARD } from '@nestjs/core'
 import { LoggerModule } from 'nestjs-pino'
 
 import appConfig from '../../config/app.config'
@@ -17,11 +17,14 @@ import { AnyExceptionFilter } from '../../filters/any-exception.filter'
 
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
+import { ThrottlerModule } from '@nestjs/throttler'
+import { envFlagValue } from 'src/config/helpers'
 
 /**
  * Configure the project's App Module.
  *
  * @see {@link https://docs.nestjs.com/techniques/configuration|NestJS Docs - Configuration}
+ * @see {@link https://docs.nestjs.com/security/rate-limiting|NestJS Throttler Module}
  * @see {@link https://github.com/iamolegga/nestjs-pino#configuration|nestjs-pino docs (configuration)}
  * @see {@link https://github.com/pinojs/pino-http#pinohttpopts-stream|pino-http options}
  */
@@ -41,6 +44,17 @@ import { AppService } from './app.service'
       ],
       exclude: [{ method: RequestMethod.ALL, path: 'healthcheck' }], // do not log healthcheck requests (healthcheck tbd)
     }),
+    ...(envFlagValue(process.env.THROTTLE_ENABLED_FLAG)
+      ? [
+          ThrottlerModule.forRootAsync({
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => ({
+              ttl: config.get('app.throttler').throttleTTL,
+              limit: config.get('app.throttler').throttleLimit,
+            }),
+          }),
+        ]
+      : []),
     DatabaseModule,
     AuthModule,
     UsersModule,
@@ -48,6 +62,10 @@ import { AppService } from './app.service'
     UiModule,
   ],
   controllers: [AppController],
-  providers: [AppService, { provide: APP_FILTER, useClass: AnyExceptionFilter }],
+  providers: [
+    AppService,
+    { provide: APP_FILTER, useClass: AnyExceptionFilter },
+    { provide: APP_GUARD, useClass: ThrottlerModule },
+  ],
 })
 export class AppModule {}

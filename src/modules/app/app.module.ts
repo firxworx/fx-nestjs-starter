@@ -65,7 +65,7 @@ import { envFlagValue } from 'src/config/helpers'
   providers: [
     AppService,
     { provide: APP_FILTER, useClass: AnyExceptionFilter },
-    { provide: APP_GUARD, useClass: ThrottlerModule },
+    ...(envFlagValue(process.env.THROTTLER_ENABLED_FLAG) ? [{ provide: APP_GUARD, useClass: ThrottlerModule }] : []),
   ],
 })
 export class AppModule {}

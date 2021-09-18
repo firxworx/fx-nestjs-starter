@@ -1,17 +1,21 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common'
-import { getErrorMessage } from '../common/error-helpers'
+import type { Request, Response } from 'express'
+
+import { User } from 'src/modules/users/entities/user.entity'
 
 /**
- * Type guard to help identify `HttpException` responses that are ts `Record`'s.
+ * Type guard that confirms if the type of the given argument statisfies the type: `Record<string, unknown>`.
  */
-const isRecord = (value: unknown): value is Record<string, unknown> => {
-  return typeof value === 'object' && value !== null
+const isRecord = (x: unknown): x is Record<string, unknown> => {
+  return typeof x === 'object' && x !== null
 }
 
 /**
- * Filter that logs any unhandled exceptions and ensures a standardized JSON response.
+ * Filter that logs any unhandled exceptions and returns a standardized JSON response.
  *
  * Based on an example found in the NestJS docs for exception filters.
+ *
+ * @starter Review this catch-all error filter and the JSON response object
  *
  * @see {@link https://docs.nestjs.com/exception-filters}
  * @see {@link https://docs.nestjs.com/fundamentals/custom-providers}
@@ -22,27 +26,30 @@ export class AnyExceptionFilter implements ExceptionFilter {
 
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp()
-    const response = ctx.getResponse()
-    const request = ctx.getRequest()
+    const response = ctx.getResponse<Response>()
+    const request = ctx.getRequest<Request & { user?: Partial<User> }>()
 
-    const status = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR
-    const message = getErrorMessage(exception)
+    const httpStatus: number =
+      exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR
+    const errorMessage = (exception instanceof Error && exception.message) || String(exception)
+    const errorStack = exception instanceof Error ? exception.stack : undefined
 
-    // refer to exceptionFactory of ValidationPipe in `main.ts`
-    const exceptionResponse = exception instanceof HttpException && exception.getResponse()
+    const user = request.user?.email ? request.user.email : undefined
+
+    // refer to exceptionFactory of ValidationPipe in `main.ts` which may return a UI-friendly error object
+    const httpExceptionResponse = exception instanceof HttpException ? exception.getResponse() : undefined
     const errors =
-      isRecord(exceptionResponse) && 'errors' in exceptionResponse && isRecord(exceptionResponse.errors)
-        ? exceptionResponse.errors
+      isRecord(httpExceptionResponse) && 'errors' in httpExceptionResponse && isRecord(httpExceptionResponse.errors)
+        ? httpExceptionResponse.errors
         : undefined
 
-    this.logger.error(
-      `<exception> status <${status}>${request.user ? ` user <${request.user.email}>` : ''}: ${message}`,
-    )
+    this.logger.error(`Exception <${httpStatus}> <${user}>: ${errorMessage}`, errorStack)
 
-    response.status(status).json({
-      status,
-      message,
-      ...({ errors } ?? {}),
+    // @starter consider - if httpExceptionResponse is a string, you may want to return it vs. errorMessage
+    response.status(httpStatus).json({
+      status: httpStatus,
+      message: errorMessage,
+      ...(errors ? { errors } : {}),
       timestamp: new Date().toISOString(),
       path: request.url,
     })

@@ -13,11 +13,8 @@ import { AwsAbstractService } from './aws.abstract.service'
 export class AwsSnsService extends AwsAbstractService<SNSClient> {
   protected readonly logger = new Logger(this.constructor.name)
 
-  protected client: SNSClient
-
   constructor(configService: ConfigService) {
-    super(configService)
-    this.client = this.getClient(SNSClient)
+    super(SNSClient, configService)
   }
 
   // 	async onModuleInit() {

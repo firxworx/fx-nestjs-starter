@@ -3,43 +3,21 @@ import { NodeHttpHandler } from '@aws-sdk/node-http-handler'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { AwsConfig } from '../../config/aws.config'
 import { Readable } from 'stream'
+import { AwsAbstractService } from './aws.abstract.service'
 
 @Injectable()
-export class AwsS3Service {
-  private readonly logger = new Logger(this.constructor.name)
+export class AwsS3Service extends AwsAbstractService<S3Client> {
+  protected readonly logger = new Logger(this.constructor.name)
 
-  private client: S3Client
-
-  constructor(private readonly configService: ConfigService) {
-    this.client = this.getS3Client()
-  }
-
-  private getAwsConfig() {
-    const awsConfig = this.configService.get<AwsConfig>('aws')
-
-    if (!awsConfig) {
-      throw new Error('Failed to resolve AWS config')
-    }
-
-    return awsConfig
+  constructor(configService: ConfigService) {
+    super(S3Client, configService)
   }
 
   private getRequestHandler() {
     return new NodeHttpHandler({
       connectionTimeout: 1000,
       socketTimeout: 10000,
-    })
-  }
-
-  private getS3Client() {
-    const awsConfig = this.getAwsConfig()
-    return new S3Client({
-      region: awsConfig.region,
-      ...awsConfig.credentials,
-      // getRequestHandler
-      // logger: console,
     })
   }
 

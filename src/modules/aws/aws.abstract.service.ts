@@ -5,9 +5,14 @@ import { AwsConfig } from './types/aws.config.interface'
 
 export abstract class AwsAbstractService<AwsClient> {
   protected abstract readonly logger: Logger
-  protected abstract client: AwsClient
+  protected client: AwsClient
 
-  protected constructor(private readonly configService: ConfigService) {}
+  protected constructor(
+    private readonly ClientClass: { new (...args: any[]): AwsClient },
+    private readonly configService: ConfigService,
+  ) {
+    this.client = this.getClient()
+  }
 
   protected getAwsConfig() {
     const awsConfig = this.configService.get<AwsConfig>('aws')
@@ -19,18 +24,23 @@ export abstract class AwsAbstractService<AwsClient> {
     return awsConfig
   }
 
-  protected getClient(
-    ClientClass: { new (...args: any[]): AwsClient },
-    optionalConfig?: Record<string, unknown>,
-  ): AwsClient {
+  /**
+   * Initialize (or re-initialize if called from child class) the protected `client` property.
+   *
+   * @param optionalConfig
+   * @returns
+   */
+  protected getClient(optionalConfig?: Record<string, unknown>): AwsClient {
     const awsConfig = this.getAwsConfig()
 
-    return new ClientClass({
+    this.client = new this.ClientClass({
       region: awsConfig.region,
       credentials: awsConfig.credentials,
       ...(optionalConfig ? optionalConfig : {}),
       // logger: console,
     })
+
+    return this.client
   }
 
   protected handleError(error: unknown) {

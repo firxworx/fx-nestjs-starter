@@ -28,6 +28,9 @@ export interface AppConfig {
   }
   openApiDocs: {
     enabled: boolean
+    title: string
+    description: string
+    version: string
   }
 }
 
@@ -85,6 +88,9 @@ export default registerAs('app', (): AppConfig => {
     },
     openApiDocs: {
       enabled: envFlagValue(process.env.OPENAPI_ENABLED_FLAG),
+      title: process.env.OPENAPI_TITLE ?? 'API',
+      description: process.env.OPENAPI_DESCRIPTION ?? 'API Powered by NestJS',
+      version: process.env.OPENAPI_VERSION ?? process.env.API_VERSION ?? '',
     },
   }
 })

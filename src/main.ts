@@ -39,18 +39,19 @@ async function bootstrap(): Promise<NestExpressApplication> {
   app.setGlobalPrefix(globalPrefixValue)
 
   // @starter set openapi/swagger title, description, version, etc. @see - https://docs.nestjs.com/openapi/introduction
-  // note cookies are not supported in the browser 'try it' ui though you can publish to https://app.swaggerhub.com/search
+  // cookies are not supported by the browser UI 'Try it Out' feature, though they are supported if you publish to https://app.swaggerhub.com/search
   if (appConfig.openApiDocs.enabled) {
     logger.log('Enabling swagger')
 
     const openApiConfig = new DocumentBuilder()
-      .setTitle('Project API')
-      .setDescription('REST API powered by NestJS.')
-      .setVersion('0.1.0')
+      .setTitle(appConfig.openApiDocs.title)
+      .setDescription(appConfig.openApiDocs.description)
+      .setVersion(appConfig.openApiDocs.version)
       .addCookieAuth('Authorization', {
         name: 'Authorization',
         description: 'Authorization token (JWT)',
         type: 'apiKey',
+        // in: 'header',
       })
       // .addCookieAuth('Refresh', {
       //   name: 'Refresh',
@@ -61,10 +62,18 @@ async function bootstrap(): Promise<NestExpressApplication> {
       .build()
 
     const openApiDocumentOptions: SwaggerDocumentOptions = {}
+
+    // @see https://docs.nestjs.com/openapi/introduction - set custom css, js, favicon, url, etc.
     const openApiExpressCustomOptions: ExpressSwaggerCustomOptions = {
+      // @see https://swagger.io/docs/open-source-tools/swagger-ui/usage/configuration/
       swaggerOptions: {
+        // @starter Swagger/OpenAPI - persist authorization data so that it is not lost on browser close/refresh
         persistAuthorization: true,
-        // include cookie credentials in request
+        // @starter Swagger/OpenAPI - empty array disables the Try It Out feature. Or, list http methods (lowercase) that have Swagger Try It Out editor enabled. Delete the following property entirely to support all methods by default.
+        supportedSubmitMethods: [],
+        // @starter Swagger/OpenAPI - when true (default is false), enables passing credentials per fetch() in CORS requests sent by the browser (with caveat that swagger UI cannot set cross-domain cookies)
+        withCredentials: false,
+        // include cookie credentials in request (function intercepts remote definition, 'Try it Out', and OAuth 2.0 requests)
         requestInterceptor: (req: { credentials: string }) => {
           req.credentials = 'include'
           return req

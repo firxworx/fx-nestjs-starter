@@ -27,6 +27,9 @@ export abstract class AwsAbstractService<AwsClient> {
   /**
    * Initialize (or re-initialize if called from child class) the protected `client` property.
    *
+   * @starter the aws client configuration object supports a `logger` prop (e.g. `logger: console`)
+   * refer to aws sdk docs for required interface if you would like to specify your own logger here.
+   *
    * @param optionalConfig
    * @returns
    */
@@ -43,6 +46,12 @@ export abstract class AwsAbstractService<AwsClient> {
     return this.client
   }
 
+  /**
+   * Log the given error and return a rejected promise with the original error.
+   *
+   * @param error
+   * @returns rejected promise containing the original error
+   */
   protected handleError(error: unknown) {
     const tsError = error instanceof Error ? error : undefined
     this.logger.error(tsError ? tsError.message : String(error), tsError?.stack)

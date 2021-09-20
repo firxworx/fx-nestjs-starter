@@ -3,20 +3,18 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
 import { APP_FILTER, APP_GUARD } from '@nestjs/core'
 import { LoggerModule } from 'nestjs-pino'
 
-import appConfig from '../../config/app.config'
-import authConfig from '../../config/auth.config'
-import awsConfig from '../../config/aws.config'
+import appConfig from './config/app.config'
+import authConfig from './config/auth.config'
+import awsConfig from './config/aws.config'
 
-import { AuthModule } from '../auth/auth.module'
-import { AwsModule } from '../aws/aws.module'
-import { DatabaseModule } from '../database/database.module'
-import { UiModule } from '../ui/ui.module'
-import { UsersModule } from '../users/users.module'
+import { AuthModule } from './modules/auth/auth.module'
+import { AwsModule } from './modules/aws/aws.module'
+import { DatabaseModule } from './modules/database/database.module'
+import { UiModule } from './modules/ui/ui.module'
+import { UsersModule } from './modules/users/users.module'
 
-import { AnyExceptionFilter } from '../../filters/any-exception.filter'
+import { AnyExceptionFilter } from './filters/any-exception.filter'
 
-import { AppController } from './app.controller'
-import { AppService } from './app.service'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { envFlagValue } from 'src/config/helpers'
 
@@ -61,9 +59,8 @@ import { envFlagValue } from 'src/config/helpers'
     AwsModule,
     UiModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [
-    AppService,
     { provide: APP_FILTER, useClass: AnyExceptionFilter },
     ...(envFlagValue(process.env.THROTTLER_ENABLED_FLAG) ? [{ provide: APP_GUARD, useClass: ThrottlerModule }] : []),
   ],

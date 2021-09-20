@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core'
 import { ConfigService } from '@nestjs/config'
-import { HttpStatus, UnprocessableEntityException, ValidationError, ValidationPipe } from '@nestjs/common'
+import { HttpStatus, UnprocessableEntityException, ValidationError, ValidationPipe } from '@nestjs/common' // Logger
 import type { NestExpressApplication } from '@nestjs/platform-express'
 import { SwaggerModule, DocumentBuilder, SwaggerDocumentOptions, ExpressSwaggerCustomOptions } from '@nestjs/swagger'
 
@@ -9,7 +9,7 @@ import helmet from 'helmet'
 import * as cookieParser from 'cookie-parser'
 import compression from 'compression'
 
-import { AppModule } from './modules/app/app.module'
+import { AppModule } from './app.module'
 import type { AppConfig } from './config/app.config'
 
 /**
@@ -23,7 +23,10 @@ async function bootstrap(): Promise<NestExpressApplication> {
     bufferLogs: true, // refer to nestjs-pino readme
   })
 
-  // nestjs-pino + pino provide an idiomatic nestjs logger that supports json log format
+  // @todo remove (default retained for certain debug tasks)
+  // const logger = new Logger('main')
+
+  // nestjs-pino + pino provide an idiomatic nestjs logger that supports a json log format
   const logger = app.get(Logger)
   app.useLogger(logger)
 
@@ -39,7 +42,7 @@ async function bootstrap(): Promise<NestExpressApplication> {
   app.setGlobalPrefix(globalPrefixValue)
 
   // @starter set openapi/swagger title, description, version, etc. @see - https://docs.nestjs.com/openapi/introduction
-  // cookies are not supported by the browser UI 'Try it Out' feature, though they are supported if you publish to https://app.swaggerhub.com/search
+  // important - cookies are not supported by the browser UI 'Try it Out' feature, though they are supported if you publish to https://app.swaggerhub.com/search
   if (appConfig.openApiDocs.enabled) {
     logger.log('Enabling swagger')
 
@@ -59,6 +62,7 @@ async function bootstrap(): Promise<NestExpressApplication> {
       //   type: 'apiKey',
       // })
       .addBasicAuth()
+      // .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'accessToken') // for reference if auth header support is implemented
       .build()
 
     const openApiDocumentOptions: SwaggerDocumentOptions = {}
@@ -85,9 +89,8 @@ async function bootstrap(): Promise<NestExpressApplication> {
     SwaggerModule.setup('api', app, openApiDocument, openApiExpressCustomOptions)
   }
 
-  // @starter - the versioning feature is an alternative to using the global prefix to apply an app-wide version
-  // it enables controller-and-route-specific versioning - @see https://docs.nestjs.com/techniques/versioning
-  //
+  // @starter - consider the versioning feature - it is an alternative to using the global prefix to apply an app-wide version
+  // this feature enables controller-and-route-specific versioning - @see https://docs.nestjs.com/techniques/versioning
   // app.enableVersioning({
   //   type: VersioningType.URI,
   // })

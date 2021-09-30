@@ -1,4 +1,10 @@
-import { PipeTransform, Injectable, ArgumentMetadata, BadRequestException } from '@nestjs/common'
+import {
+  PipeTransform,
+  Injectable,
+  ArgumentMetadata,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common'
 import isInt from 'validator/lib/isInt'
 
 // eslint-disable-next-line
@@ -72,11 +78,15 @@ export class PaginatedQueryPipe<T> implements PipeTransform {
   constructor(private allowedFields: { sort?: Array<string>; filter?: Array<string> }) {}
   // constructor(private sortFields?: Array<keyof T>, private filterFields?: Array<keyof T>) {}
 
-  transform(value: unknown, _metadata: ArgumentMetadata): QueryParamsDto<T> {
+  transform(value: unknown, metadata: ArgumentMetadata): QueryParamsDto<T> {
     if (!isRawParsedQueryParamsDto(value)) {
       throw new BadRequestException(
         'Invalid query string parameters. Supported parameters: sort, filter, offset, limit',
       )
+    }
+
+    if (metadata.type !== 'query') {
+      throw new InternalServerErrorException('Error')
     }
 
     const sortFields = this.allowedFields?.sort

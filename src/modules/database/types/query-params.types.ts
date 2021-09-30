@@ -6,5 +6,5 @@ import { SqlOrder } from '../constants/sql-order.enum'
 // export type PaginationQueryFilterParams<T> = { [P in EntityFieldsNames<T>]?: FindConditions<T[P]> }
 // export type PaginationQueryFilterParams<T> = { [P in EntityFieldsNames<T>]?: Record<string, any> }
 
-export type PaginationQueryFilterParams<T> = { [P in EntityFieldsNames<T>]?: string }
-export type PaginationQuerySortParams<T> = { [P in EntityFieldsNames<T>]?: SqlOrder }
+export type RequestQueryFilterParams<T> = { [P in EntityFieldsNames<T>]?: string }
+export type RequestQuerySortParams<T> = { [P in EntityFieldsNames<T>]?: SqlOrder }

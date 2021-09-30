@@ -1,8 +1,5 @@
-import { ApiExtraModels, ApiOkResponse, ApiQuery, ApiResponseOptions, getSchemaPath } from '@nestjs/swagger'
+import { ApiExtraModels, ApiOkResponse, ApiResponseOptions, getSchemaPath } from '@nestjs/swagger'
 import { applyDecorators, Type } from '@nestjs/common'
-
-import { PaginatedUsersRequestDto } from 'src/modules/users/dto/paginated-users-request.dto'
-// import { PaginationQueryFilterParams } from '../../types/pagination.types'
 
 /**
  * Custom OpenAPI/Swagger decorator to document paginated API responses.
@@ -19,7 +16,7 @@ import { PaginatedUsersRequestDto } from 'src/modules/users/dto/paginated-users-
  */
 export const ApiPaginatedResponse = <ItemDto extends Type<unknown>>(itemDto: ItemDto, options?: ApiResponseOptions) => {
   return applyDecorators(
-    ApiQuery({ type: PaginatedUsersRequestDto }),
+    // ApiQuery({ type: itemDto }),
     ApiExtraModels(itemDto),
     ApiOkResponse({
       ...(options ?? {}),
@@ -46,22 +43,12 @@ export const ApiPaginatedResponse = <ItemDto extends Type<unknown>>(itemDto: Ite
   )
 }
 
-/*
-If you do not use the opt-in cli plugin for nestjs, you must:
-
-- decorate your controller class with `@ApiExtraModels()` and pass `PaginatedResponseDto` and your
-  entity/item DTO(s) as arguments.
-- add `{ $ref: getSchemaPath(PaginatedResponseDto) }` to the `allOf` array under `schema`.
-*/
-
-/*
-@starter consider if your app requires next/previous properties ...
-  next: {
-    type: 'string',
-    nullable: true,
-  },
-  previous: {
-    type: 'string',
-    nullable: true,
-  },
-*/
+// @starter consider if your app pagination requires next/previous properties ...
+//   next: {
+//     type: 'string',
+//     nullable: true,
+//   },
+//   previous: {
+//     type: 'string',
+//     nullable: true,
+//   },

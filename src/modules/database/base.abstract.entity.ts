@@ -1,5 +1,5 @@
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger'
-import { Exclude } from 'class-transformer'
+import { Exclude, Type } from 'class-transformer'
 import { Column, Index, Generated, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm'
 
 /**
@@ -25,6 +25,7 @@ export abstract class Base {
 
   @ApiHideProperty()
   @Exclude()
+  // @todo good practice to include or no? --  @Type(() => Date)
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   readonly createdAt!: Date
 

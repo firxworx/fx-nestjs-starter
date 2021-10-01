@@ -17,7 +17,7 @@ import { RegisterUserDto } from './dto/register-user.dto'
 import type { TokenPayload } from './types/token-payload.interface'
 import { AuthConfig } from '../../config/auth.config'
 import { User } from '../users/entities/user.entity'
-import { isQueryFailedError } from '../database/types/type-guards/is-query-failed-error.guard'
+import { isQueryFailedError } from '../database/types/type-guards/is-query-failed-error.type-guard'
 import { getErrorMessage } from '../../common/error-helpers'
 
 @Injectable()

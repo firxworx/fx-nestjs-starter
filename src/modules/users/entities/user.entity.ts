@@ -1,43 +1,40 @@
-import { Column, CreateDateColumn, Entity, Generated, Index, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { Column, Entity } from 'typeorm'
 import { Exclude } from 'class-transformer'
+import { Base } from 'src/modules/database/base.abstract.entity'
+import { ApiHideProperty } from '@nestjs/swagger'
 
-// this entity does not extend Database module's BaseEntity due to differences
+/**
+ * User entity.
+ *
+ * The `password` and `refreshTokenHash` properties are TypeORM "hidden columns" that are excluded from queries
+ * with `select: false` to safeguard against these values from being accidentally logged, returned in responses, etc.
+ *
+ * The `password` and `refreshTokenHash` fields must be explicitly selected with the query builder's `addSelect()` method
+ * whenever these values are required from the database, such as auth-related functions.
+ *
+ * @see {@link https://typeorm.io/#/select-query-builder/hidden-columns}
+ */
 @Entity()
-export class User {
-  @Exclude()
-  @PrimaryGeneratedColumn()
-  readonly id!: number
-
-  @Index({ unique: true })
-  @Generated('uuid')
-  @Column()
-  readonly uuid!: string
-
-  @CreateDateColumn()
-  @Exclude()
-  readonly createdAt!: Date
-
-  @UpdateDateColumn()
-  @Exclude()
-  readonly updatedAt!: Date
-
+export class User extends Base {
   @Column('varchar', { unique: true })
-  readonly email!: string | null
+  readonly email!: string
 
   @Column('varchar')
-  readonly name!: string | null
+  readonly name!: string
 
   @Column('varchar', { default: 'Etc/UTC' })
-  readonly timeZone!: string | null
+  readonly timeZone!: string
 
-  @Column('varchar', { select: false })
+  @ApiHideProperty()
   @Exclude()
+  @Column('varchar', { select: false })
   readonly password!: string | null
 
+  @ApiHideProperty()
+  @Exclude()
   @Column('varchar', {
     select: false,
     nullable: true,
   })
-  @Exclude()
   readonly refreshTokenHash!: string | null
 }

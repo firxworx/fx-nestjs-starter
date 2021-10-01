@@ -8,7 +8,7 @@
  * @param error unknown error
  */
 export const getErrorMessage = (error: unknown) => {
-  return (error && error instanceof Error && error.message) || String(error)
+  return (error instanceof Error && error.message) || String(error)
 }
 
 /**
@@ -21,5 +21,5 @@ export const getErrorMessage = (error: unknown) => {
  * @param error unknown error
  */
 export const getErrorStack = (error: unknown) => {
-  return (error && error instanceof Error && error.stack) || undefined
+  return (error instanceof Error && error.stack) || undefined
 }

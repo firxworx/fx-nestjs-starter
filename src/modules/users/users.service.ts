@@ -11,9 +11,9 @@ import * as bcrypt from 'bcryptjs'
 
 import { User } from './entities/user.entity'
 import { CreateUserDto } from './dto/create-user.dto'
-import { PaginatedUsersRequestDto } from './dto/paginated-users-request.dto'
 import { PaginatedResponseDto } from '../database/dto/paginated-response.dto'
-import { paginationFindParamsBuilder } from '../database/api/pagination-find-params-builder'
+import { QueryUtilsService } from '../database/query-utils.service'
+import { PageFilterSortParams } from '../database/types/page-filter-sort-params.interface'
 
 @Injectable()
 export class UsersService {
@@ -22,6 +22,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private queryUtilsService: QueryUtilsService,
   ) {}
 
   /**
@@ -93,12 +94,12 @@ export class UsersService {
   /**
    * Get paginated users.
    */
-  async getPaginatedUsers(paramsDto: PaginatedUsersRequestDto): Promise<PaginatedResponseDto<User>> {
+  async getPaginatedUsers(params: PageFilterSortParams<User>): Promise<PaginatedResponseDto<User>> {
     // maybe add better response interceptor/serializer for more options -- Promise<PaginatedResponseDto<UserDto>>
     // @todo - revise paginationFindParamsBuilder() to accept regular FindManyOptions and add the pagination stuff to that and then return
     // @todo - maybe also one for the isActive() flag
     const [users, totalCount] = await this.usersRepository.findAndCount({
-      ...paginationFindParamsBuilder(paramsDto),
+      ...this.queryUtilsService.generatePageFilterSortFindOptions(params),
       // where: { ... }, // @todo - where isActive
     })
 

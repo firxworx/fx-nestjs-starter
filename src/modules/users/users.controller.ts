@@ -9,10 +9,13 @@ import {
   UseInterceptors,
 } from '@nestjs/common'
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger'
+
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { ApiPaginatedResponse } from '../database/decorators/openapi/api-paginated-response.decorator'
 import { PaginatedResponseDto } from '../database/dto/paginated-response.dto'
-import { PaginatedUsersRequestDto } from './dto/paginated-users-request.dto'
+import { PageFilterSortQueryValidationPipe } from '../database/pipes/page-filter-sort-query-validation.pipe'
+import { PageFilterSortParams } from '../database/types/page-filter-sort-params.interface'
+
 import { User } from './entities/user.entity'
 import { UsersService } from './users.service'
 
@@ -29,7 +32,15 @@ export class UsersController {
   @ApiPaginatedResponse(User)
   @Get()
   @HttpCode(HttpStatus.OK)
-  getUsers(@Query() paramsDto: PaginatedUsersRequestDto): Promise<PaginatedResponseDto<User>> {
-    return this.usersService.getPaginatedUsers(paramsDto)
+  getUsers(
+    @Query(
+      new PageFilterSortQueryValidationPipe<User>({
+        filter: ['email', 'timeZone'],
+        sort: ['email'],
+      }),
+    )
+    params: PageFilterSortParams<User>,
+  ): Promise<PaginatedResponseDto<User>> {
+    return this.usersService.getPaginatedUsers(params)
   }
 }

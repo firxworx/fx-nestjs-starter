@@ -160,6 +160,8 @@ async function bootstrap(): Promise<NestExpressApplication> {
   // use helmet to set common security-related http headers
   app.use(helmet())
 
+  // SpelunkerModule.explore(app)
+
   const httpServer = await app.listen(appConfig.port, () => {
     logger.log(`🚀 Application environment: <${process.env.NODE_ENV}>`)
     logger.log(`🚀 Application listening on port <${appConfig.port}> at path <${globalPrefixValue}>`)

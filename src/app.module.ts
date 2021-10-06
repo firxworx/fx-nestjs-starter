@@ -1,6 +1,7 @@
 import { Module, RequestMethod } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { APP_FILTER, APP_GUARD } from '@nestjs/core'
+import { ThrottlerModule } from '@nestjs/throttler'
 import { LoggerModule } from 'nestjs-pino'
 
 import appConfig from './config/app.config'
@@ -15,8 +16,8 @@ import { UsersModule } from './modules/users/users.module'
 
 import { AnyExceptionFilter } from './filters/any-exception.filter'
 
-import { ThrottlerModule } from '@nestjs/throttler'
 import { envFlagValue } from 'src/config/helpers'
+import stripeConfig from './config/stripe.config'
 
 /**
  * Configure the project's App Module.
@@ -30,7 +31,7 @@ import { envFlagValue } from 'src/config/helpers'
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, authConfig, awsConfig],
+      load: [appConfig, authConfig, awsConfig, stripeConfig],
     }),
     LoggerModule.forRoot({
       pinoHttp: [

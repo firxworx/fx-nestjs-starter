@@ -10,7 +10,6 @@ import { StripeOptionsFactory } from './types/stripe-options-factory.interface'
 import { StripeService } from './stripe.service'
 import { ConfigModule } from '@nestjs/config'
 
-// @Global()
 @Module({})
 export class StripeModule {
   public static register(options: StripeModuleOptions): DynamicModule {
@@ -70,22 +69,14 @@ export class StripeModule {
       }
     }
 
-    if (options.useExisting) {
-      return {
-        provide: STRIPE_MODULE_OPTIONS,
-        inject: [options.useExisting],
-        useFactory: (optionsFactory: StripeOptionsFactory) => optionsFactory.createOptions(),
-      }
+    if ((!options.useClass && !options.useExisting) || (options.useClass && options.useExisting)) {
+      throw new Error('StripeModule async options configuration error')
     }
 
-    if (options.useClass) {
-      return {
-        provide: STRIPE_MODULE_OPTIONS,
-        inject: [options.useClass],
-        useFactory: (optionsFactory: StripeOptionsFactory) => optionsFactory.createOptions(),
-      }
+    return {
+      provide: STRIPE_MODULE_OPTIONS,
+      inject: [...(options.useExisting ? [options.useExisting] : []), ...(options.useClass ? [options.useClass] : [])],
+      useFactory: (optionsFactory: StripeOptionsFactory) => optionsFactory.createOptions(),
     }
-
-    throw new Error('StripeModule async configuration error')
   }
 }

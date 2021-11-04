@@ -1,6 +1,7 @@
 # compiled output
 /dist
 /node_modules
+/cdk/node_modules
 
 # logs
 logs
@@ -39,3 +40,6 @@ lerna-debug.log*
 /notes
 notes.md
 todos.md
+
+# temporary
+/docs

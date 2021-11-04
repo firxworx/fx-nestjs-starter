@@ -1,9 +1,18 @@
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger'
-import { Exclude, Type } from 'class-transformer'
-import { Column, Index, Generated, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm'
+import { Exclude } from 'class-transformer'
+import {
+  Column,
+  Index,
+  Generated,
+  CreateDateColumn,
+  UpdateDateColumn,
+  PrimaryGeneratedColumn,
+  DeleteDateColumn,
+} from 'typeorm'
 
 /**
- * Abstract entity that defines properties common to most project entities.
+ * Abstract entity that defines fields common to most project entities, including a `deletedAt` field
+ * that's compatible with typeorm's soft-delete feature.
  *
  * A design decision is to define both a primary key `id` and a unique `uuid` field.
  *
@@ -25,7 +34,6 @@ export abstract class Base {
 
   @ApiHideProperty()
   @Exclude()
-  // @todo good practice to include or no? --  @Type(() => Date)
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   readonly createdAt!: Date
 
@@ -36,6 +44,6 @@ export abstract class Base {
 
   @ApiHideProperty()
   @Exclude()
-  @Column({ type: 'boolean', default: true })
-  isActive!: boolean
+  @DeleteDateColumn()
+  public deletedAt!: Date
 }

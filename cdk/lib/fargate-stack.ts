@@ -6,6 +6,7 @@ import * as iam from '@aws-cdk/aws-iam'
 import * as logs from '@aws-cdk/aws-logs'
 import * as route53 from '@aws-cdk/aws-route53'
 import * as acm from '@aws-cdk/aws-certificatemanager'
+import * as ecr from '@aws-cdk/aws-ecr'
 
 import { CoreStack } from './core-stack'
 
@@ -15,9 +16,6 @@ export interface FargateStackProps extends cdk.StackProps {
   /** short project identifier that doesn't use special characters other than - or _ */
   projectTag: string
 
-  /** ecs/fargate service to target for deployment */
-  targetService: ecs.IBaseService
-
   tasks?: {
     desiredCount?: number
     autoScaleMaxCapacity?: number
@@ -26,7 +24,8 @@ export interface FargateStackProps extends cdk.StackProps {
   }
 
   container: {
-    image: ecs.ContainerImage
+    // image: ecs.ContainerImage
+    repository: ecr.Repository
     port: number
     memoryLimit?: ecs.ContainerDefinitionOptions['memoryLimitMiB']
     minCpu?: ecs.ContainerDefinitionOptions['cpu']
@@ -112,21 +111,24 @@ export class FargateStack extends cdk.Stack {
     }
     */
 
-    this.containerDef = this.taskDef.addContainer('flask-app', {
+    this.containerDef = this.taskDef.addContainer(`${props.projectTag}-app`, {
       // image: ecs.ContainerImage.fromRegistry('dockerhub/image'),
       // image: ecs.ContainerImage.fromAsset('/path/to/Dockerfile'),
       // image: ecs.ContainerImage.fromEcrRepository(this.repository, 'latest'),
-      image: props.container.image,
+      // image: ContainerImage.fromEcrRepository(image.repository),
+      // image: props.container.image,
+      image: ecs.ContainerImage.fromEcrRepository(props.container.repository), // @todo lookup by name so no strict dependency (once all removed, remember to declare the cdk dependencies)
       memoryLimitMiB: props.container.memoryLimit ?? 256,
       cpu: props.container.minCpu ?? 256,
       logging: this.logDriver,
       environment: props.container.environment ?? { NOCOLOR: '1' },
       secrets: props.container.secrets,
-    })
-
-    this.containerDef.addPortMappings({
-      containerPort: props.container.port,
-      protocol: ecs.Protocol.TCP,
+      portMappings: [
+        {
+          containerPort: props.container.port,
+          protocol: ecs.Protocol.TCP,
+        },
+      ],
     })
 
     this.certificate = acm.Certificate.fromCertificateArn(this, 'Certificate', props.loadBalancer.certificateArn)
@@ -134,8 +136,8 @@ export class FargateStack extends cdk.Stack {
       domainName: props.loadBalancer.hostedZoneDomainName,
     })
 
-    // the alb will be configured for https + listen on port 443 because a certificate is specified
-    this.albfs = new ecs_patterns.ApplicationLoadBalancedFargateService(this, 'ecs-service', {
+    // the alb will be configured for https + will listen on port 443 because a certificate is specified
+    this.albfs = new ecs_patterns.ApplicationLoadBalancedFargateService(this, 'ALBFS', {
       cluster: this.cluster,
       taskDefinition: this.taskDef,
       publicLoadBalancer: props.loadBalancer?.public ?? true,
@@ -150,7 +152,7 @@ export class FargateStack extends cdk.Stack {
     })
 
     this.scalableTaskCount.scaleOnCpuUtilization('CpuScaling', {
-      targetUtilizationPercent: props.tasks?.targetUtilizationPercent ?? 15,
+      targetUtilizationPercent: props.tasks?.targetUtilizationPercent ?? 50,
       scaleInCooldown: props.tasks?.scaleCooldownDuration ?? cdk.Duration.seconds(60),
       scaleOutCooldown: props.tasks?.scaleCooldownDuration ?? cdk.Duration.seconds(60),
     })

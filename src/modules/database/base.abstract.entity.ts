@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
   PrimaryGeneratedColumn,
   DeleteDateColumn,
+  VersionColumn,
 } from 'typeorm'
 
 /**
@@ -46,4 +47,9 @@ export abstract class Base {
   @Exclude()
   @DeleteDateColumn()
   public deletedAt!: Date
+
+  @ApiHideProperty()
+  @Exclude()
+  @VersionColumn()
+  version!: number
 }

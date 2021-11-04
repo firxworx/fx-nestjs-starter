@@ -13,6 +13,7 @@ import { GetUser } from '../users/decorators/get-user.decorator'
 import { User } from '../users/entities/user.entity'
 import { UiContextResponseDto } from './dto/ui-context-response.dto'
 import { UiService } from './ui.service'
+import { StripeService } from '../stripe/stripe.service'
 
 @ApiTags('UI')
 @ApiCookieAuth()
@@ -20,7 +21,7 @@ import { UiService } from './ui.service'
 @Controller('ui')
 @UseInterceptors(ClassSerializerInterceptor)
 export class UiController {
-  constructor(private readonly uiService: UiService) {}
+  constructor(private readonly uiService: UiService, private readonly stripeService: StripeService) {}
 
   /**
    * Return context for the ui (front-end).
@@ -43,5 +44,10 @@ export class UiController {
       },
       data: context,
     }
+  }
+
+  @Get('/stripetest')
+  stripeTest(): any {
+    return this.stripeService.getCustomers()
   }
 }

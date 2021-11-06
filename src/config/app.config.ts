@@ -6,7 +6,7 @@ import {
   DEFAULT_THROTTLER_LIMIT,
   DEFAULT_THROTTLER_TTL,
 } from './defaults'
-import { envFlagValue } from './helpers'
+import { envFlagValue, envNumberValue } from './helpers'
 
 export interface AppConfig {
   origin: string
@@ -16,6 +16,14 @@ export interface AppConfig {
   express: {
     compression: boolean
     trustProxy: boolean
+  }
+  healthCheck: {
+    /** healthcheck ping url to verify http connectivity (and dns if provided a url with domain name).  */
+    httpPingUrl: string | false
+    /** healthcheck threshold for max heap size in MiB.  */
+    maxHeapMiB: number | false
+    /** healthcheck threshold for max rss (resident set size) in MiB.  */
+    maxRssMiB: number | false
   }
   /** Config for @nestjs/throttler. */
   throttler: {
@@ -81,6 +89,11 @@ export default registerAs('app', (): AppConfig => {
     basePath: process.env.BASE_PATH ?? DEFAULT_BASE_PATH,
     apiVersion: process.env.API_VERSION ?? DEFAULT_API_VERSION,
     ...getExpressConfig(),
+    healthCheck: {
+      httpPingUrl: process.env.HEALTH_CHECK_HTTP_PING_URL ?? false,
+      maxHeapMiB: envNumberValue(process.env.HEALTH_CHECK_MAX_HEAP_MIB) ?? false,
+      maxRssMiB: envNumberValue(process.env.HEALTH_CHECK_MAX_RSS_MIB) ?? false,
+    },
     throttler: {
       enabled: envFlagValue(process.env.THROTTLER_ENABLED_FLAG),
       throttleTTL: process.env.THROTTLER_TTL ? Number(process.env.THROTTLER_TTL) : DEFAULT_THROTTLER_TTL,

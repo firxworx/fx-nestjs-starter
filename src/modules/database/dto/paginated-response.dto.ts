@@ -22,7 +22,7 @@ export class PaginatedResponseDto<T> {
   })
   readonly data!: Array<T>
 
-  @ApiResponseProperty() // {escription: 'Total number of records (rows) in data',}
+  @ApiResponseProperty() // {description: 'Total number of records (rows) in data',}
   @IsNumber()
   readonly count!: number
 }

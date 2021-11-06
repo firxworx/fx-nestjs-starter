@@ -106,6 +106,7 @@ async function bootstrap(): Promise<NestExpressApplication> {
   // })
 
   // ensure the `onApplicationShutdown()` functions of providers are called if process receives a shutdown signal
+  // shutdown hooks are also important for terminus-powered healthchecks
   app.enableShutdownHooks()
 
   // @starter - consider if ClassSerializerInterceptor should be globally enabled or not

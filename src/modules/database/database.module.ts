@@ -13,7 +13,7 @@ const typeOrmModuleOptions: TypeOrmModuleOptions = {
   ...ormconfig,
 
   // @starter - automatically load any entities that are injected to modules via `TypeOrmModule.forFeature()`
-  autoLoadEntities: false,
+  autoLoadEntities: true,
 }
 
 @Module({

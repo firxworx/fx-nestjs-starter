@@ -1,6 +1,6 @@
 import { Column, Entity } from 'typeorm'
 import { Exclude } from 'class-transformer'
-import { Base } from 'src/modules/database/base.abstract.entity'
+import { BaseAbstractEntity } from 'src/modules/database/base.abstract.entity'
 import { ApiHideProperty } from '@nestjs/swagger'
 
 /**
@@ -15,7 +15,7 @@ import { ApiHideProperty } from '@nestjs/swagger'
  * @see {@link https://typeorm.io/#/select-query-builder/hidden-columns}
  */
 @Entity()
-export class User extends Base {
+export class User extends BaseAbstractEntity {
   @Column('varchar', { unique: true })
   readonly email!: string
 

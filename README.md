@@ -53,8 +53,6 @@ For documentation refer to:
 
 ## Development workflow
 
-To get started with a clone or fork of this project...
-
 ### Prerequisites
 
 Ensure that your environment has the following dependencies installed: git, node, yarn, docker.
@@ -71,25 +69,25 @@ yarn
 
 ### Define environment variables
 
-Create a new local `.env` file based on a copy of the example `.env.sample` file.
+Create an `.env` file in the repository root folder based on a copy of the example `.env.sample` file.
 
 By project convention, environment variables named with the suffix `_FLAG` are boolean properties that accept `1` (true) or `0` (false) values. Any value other than `1` will be interpreted as false.
 
 ### Run development database
 
-To start the postgres database server defined in `docker-compose.yml` in daemon mode, run:
+To start the postgres database server defined in `docker-compose.yml` in daemon mode (so that it will run in the background), run:
 
 ```bash
 yarn docker:postgres:up
 ```
 
-Run database migrations:
+To run database migrations:
 
 ```bash
 yarn migration:run
 ```
 
-To seed the database with sample/dev data:
+_WIP_ - To seed the database with sample/dev data:
 
 ```bash
 yarn seed:run
@@ -97,7 +95,7 @@ yarn seed:run
 
 ### Run application in dev mode
 
-To run the application in dev (watch) mode: 
+To run the application in dev mode configured to watch for file changes, run:
 
 ```bash
 yarn start:dev
@@ -222,10 +220,9 @@ The plugin adheres to nestjs conventions in its default configuration and will o
 
 ### Limitations
 
-The Swagger UI + Swagger Editor does not currently support cookie authentication so the "Try it Out" feature is limited for this API.  Refer to this issue: <https://github.com/swagger-api/swagger-js/issues/1163>
+The "Try it Out" feature is limited for this project API because Swagger UI + Swagger Editor does not currently support cookie authentication.  Refer to this issue: <https://github.com/swagger-api/swagger-js/issues/1163>
 
-If you publish to Swagger Hub, cookies are supported because
-
+If you publish your docs to Swagger Hub, cookies are supported on that platform thanks to its particular implementation.
 
 ## Running the app
 

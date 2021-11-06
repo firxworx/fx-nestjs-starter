@@ -2121,6 +2121,13 @@
     lodash "4.17.21"
     path-to-regexp "3.2.0"
 
+"@nestjs/terminus@^8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@nestjs/terminus/-/terminus-8.0.1.tgz#96403795cbb6f14621c7504ee534fba336066643"
+  integrity sha512-UUSKK3/kO2gMUdXGJaOsj89pYA6OJMoKQPDx+zoEKQhA3+TPp0Js4ndWrtms5g6ydf3BfQqGQgEBEBjiq+0LWQ==
+  dependencies:
+    check-disk-space "3.0.1"
+
 "@nestjs/testing@^8.0.0":
   version "8.0.6"
   resolved "https://registry.yarnpkg.com/@nestjs/testing/-/testing-8.0.6.tgz#c6f160ce9ced24f00c653d5a284dc35dd5162dd8"
@@ -3273,6 +3280,11 @@ charenc@0.0.2:
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/charenc/-/charenc-0.0.2.tgz#c0a1d2f3a7092e03774bfa83f14c0fc5790a8667"
   integrity sha1-wKHS86cJLgN3S/qD8UwPxXkKhmc=
+
+check-disk-space@3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/check-disk-space/-/check-disk-space-3.0.1.tgz#c3798f3e4ec56dcc4d4b98dac0b770e2634efad7"
+  integrity sha512-wRG5ZihEZUXAKVCio5YkLgrHsHDrD+GjRBjxJvoJvN9wrze7EdvYGnOYJSsCyZ4b40jBa3lDmWDmESY9QDQGcg==
 
 chokidar@3.5.2, chokidar@^3.4.2:
   version "3.5.2"

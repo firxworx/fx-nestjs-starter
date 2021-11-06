@@ -2,6 +2,8 @@ import { Module, RequestMethod } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { APP_FILTER, APP_GUARD } from '@nestjs/core'
 import { ThrottlerModule } from '@nestjs/throttler'
+import { TerminusModule } from '@nestjs/terminus'
+
 import { LoggerModule } from 'nestjs-pino'
 
 import appConfig from './config/app.config'
@@ -55,6 +57,7 @@ import stripeConfig from './config/stripe.config'
         ]
       : []),
     DatabaseModule,
+    TerminusModule,
     AuthModule,
     UsersModule,
     AwsModule,

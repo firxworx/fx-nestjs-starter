@@ -2,7 +2,6 @@ import { Module, RequestMethod } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { APP_FILTER, APP_GUARD } from '@nestjs/core'
 import { ThrottlerModule } from '@nestjs/throttler'
-import { TerminusModule } from '@nestjs/terminus'
 
 import { LoggerModule } from 'nestjs-pino'
 
@@ -20,6 +19,7 @@ import { AnyExceptionFilter } from './filters/any-exception.filter'
 
 import { envFlagValue } from 'src/config/helpers'
 import stripeConfig from './config/stripe.config'
+import { HealthCheckModule } from './modules/health-check/health-check.module'
 
 /**
  * Configure the project's App Module.
@@ -57,7 +57,7 @@ import stripeConfig from './config/stripe.config'
         ]
       : []),
     DatabaseModule,
-    TerminusModule,
+    HealthCheckModule,
     AuthModule,
     UsersModule,
     AwsModule,

@@ -18,6 +18,7 @@ export class JwtRefreshTokenStrategy extends PassportStrategy(Strategy, 'jwt-ref
           return request?.cookies?.Refresh
         },
       ]),
+      // pass request to `validate()` to access request.cookies
       secretOrKey: configService.get<AuthConfig>('auth')?.jwt.refreshToken.secret ?? '',
       passReqToCallback: true,
     })

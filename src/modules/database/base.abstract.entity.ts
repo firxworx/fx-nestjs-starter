@@ -12,16 +12,20 @@ import {
 } from 'typeorm'
 
 /**
- * Abstract entity that defines fields common to most project entities, including a `deletedAt` field
- * that's compatible with typeorm's soft-delete feature.
+ * Abstract entity that defines fields common to most project entities, including both an `id` (auto incrementing integer) and
+ * unique `uuid` fields (UUID's are often useful as for public-facing identifiers), as well as `createdAt`, `updatedAt`,
+ * and `deletedAt` fields.
  *
- * A design decision is to define both a primary key `id` and a unique `uuid` field.
+ * The `deletedAt` field is compatible with typeorm's soft-delete feature.
+ *
+ * Take note of the implications of soft-delete when used in conjunction with `unique` constraints on fields
+ * (for example: consider an entity with a unique `email` field) and handle if/as required.
  *
  * As a consideration for postgres + node-postgres, fields with type `Date` are created with type `timestamptz`.
  *
  * @see {@link https://wiki.postgresql.org/wiki/Don't_Do_This#Don.27t_use_timestamp_.28without_time_zone.29}
  */
-export abstract class Base {
+export abstract class BaseAbstractEntity {
   @ApiHideProperty()
   @Exclude()
   @PrimaryGeneratedColumn()

@@ -6,11 +6,11 @@ import { ApiHideProperty } from '@nestjs/swagger'
 /**
  * User entity.
  *
- * The `password` and `refreshTokenHash` properties are TypeORM "hidden columns" that are excluded from queries
- * with `select: false` to safeguard against these values from being accidentally logged, returned in responses, etc.
+ * The `password` and `refreshTokenHash` properties are TypeORM hidden columns that are excluded from queries
+ * by specifying `select: false`. This safeguards against these sensitive values from being returned to clients, logged, etc.
  *
- * The `password` and `refreshTokenHash` fields must be explicitly selected with the query builder's `addSelect()` method
- * whenever these values are required from the database, such as auth-related functions.
+ * The `password` and `refreshTokenHash` fields must be explicitly selected in queries using query builder's `addSelect()` method,
+ * for example by the appropriate authorization/validation function implementations.
  *
  * @see {@link https://typeorm.io/#/select-query-builder/hidden-columns}
  */

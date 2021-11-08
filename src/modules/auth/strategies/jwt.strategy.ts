@@ -4,9 +4,9 @@ import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Request } from 'express'
 
-import { UsersService } from '../users/users.service'
-import { TokenPayload } from './types/token-payload.interface'
-import { AuthConfig } from '../../config/auth.config'
+import { UsersService } from '../../users/users.service'
+import { TokenPayload } from '../types/token-payload.interface'
+import { AuthConfig } from '../../../config/auth.config'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -14,7 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request) => {
-          // cookies added to request object via cookie-parser (refer to main.ts)
+          // cookies are added to request object by cookie-parser (refer to main.ts)
           return request?.cookies?.Authentication
         },
       ]),
@@ -23,12 +23,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   /**
-   * Given a JWT token payload, return an instance of `User` associated with the `userId` contained in the payload.
+   * Given a JWT token payload, return the user entity associated with the `userId` contained in the payload.
    *
-   * The object returned by this method is added to the request object of any controller method that is decorated
-   * with the appropriate guard, e.g. `JwtAuthGuard`.
+   * The object returned by this method is added as `request.user` to any controller handler method that is
+   * decorated with the appropriate guard, e.g. `JwtAuthGuard`.
    *
-   * Note that the JWT is already validated at the point where this method is called.
+   * Note: the JWT has already been validated by passport when this method is called.
    */
   async validate(payload: TokenPayload) {
     const user = this.userService.getById(payload.userId)

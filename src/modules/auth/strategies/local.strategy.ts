@@ -1,8 +1,8 @@
 import { Strategy } from 'passport-local'
 import { PassportStrategy } from '@nestjs/passport'
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common'
-import { AuthService } from './auth.service'
-import { User } from '../users/entities/user.entity'
+import { AuthService } from '../auth.service'
+import { User } from '../../users/entities/user.entity'
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
@@ -15,7 +15,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   }
 
   /**
-   * Given an email and password, return the user associated with the email + password tuple or else throw an `UnauthorizedException`.
+   * Given email and password credentials, return the user associated with the email + password tuple or else throw an `UnauthorizedException`.
    *
    * The user instance returned by this method is added to the request object of any controller method that is decorated
    * with the appropriate guard, e.g. `LocalAuthGuard`.

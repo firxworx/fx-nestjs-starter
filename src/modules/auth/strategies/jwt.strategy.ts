@@ -31,12 +31,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * Note: the JWT has already been validated by passport when this method is called.
    */
   async validate(payload: TokenPayload) {
-    const user = this.userService.getById(payload.userId)
+    const user = await this.userService.findOne(payload.userId)
 
     if (!user) {
-      throw new UnauthorizedException('Unauthorized')
+      throw new UnauthorizedException()
     }
 
-    return this.userService.getById(payload.userId)
+    return user
   }
 }

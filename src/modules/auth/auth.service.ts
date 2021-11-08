@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 
 import * as bcrypt from 'bcryptjs'
+import argon2 from 'argon2'
 
 import { UsersService } from '../users/users.service'
 import { PostgresErrorCode } from '../database/constants/postgres-error-code.enum'
@@ -111,39 +112,33 @@ export class AuthService {
    * @see JwtStrategy
    */
   public async getAuthenticatedUser(email: string, plainTextPassword: string): Promise<User> {
-    const user = await this.usersService.getByEmailForVerification(email)
+    // the findByEmailForVerification() method selects password field that's otherwise excluded
+    const user = await this.usersService.findByEmailForVerification(email)
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials')
+      throw new UnauthorizedException()
     }
 
     if (!user.password) {
-      throw new InternalServerErrorException('Error authenticating user')
+      this.logger.error(`Encountered user with no password: ${email}`)
+      throw new UnauthorizedException()
     }
 
-    const isVerified = await this.verifyUserPassword(plainTextPassword, user.password)
+    const isVerified = await this.verifyHash(user.password, plainTextPassword)
 
     if (isVerified) {
-      // only return the user via a 'safe' method that is 'protected' by entity exclude decorators
-      // this protects against release of potentially sensitive information at the expense of another db query
-      return this.usersService.getByEmailOrThrow(email)
+      // at expense of an extra db query, obtain user via a 'safe' method that protects sensitive fields
+      return this.usersService.getByEmail(email)
     }
 
     throw new UnauthorizedException('Invalid credentials')
   }
 
   /**
-   * Return a boolean indicating if the given plaintext + hashed password match.
-   */
-  private async verifyUserPassword(plainTextPassword: string, hashedPassword: string): Promise<boolean> {
-    return bcrypt.compare(plainTextPassword, hashedPassword)
-  }
-
-  /**
    * Return the user corresponding to the `userId` in the given JWT token payload, otherwise
    * `undefined` if the given token cannot be verified or the user is not found.
    */
-  public async getUserFromAuthenticationToken(token: string): Promise<User | undefined> {
+  public async getUserByAuthenticationToken(token: string): Promise<User | undefined> {
     const authConfig = this.configService.get<AuthConfig>('auth')
 
     const payload: TokenPayload = this.jwtService.verify(token, {
@@ -151,9 +146,63 @@ export class AuthService {
     })
 
     if (payload.userId) {
-      return this.usersService.getById(payload.userId)
+      return this.usersService.findOne(payload.userId)
     }
 
     return undefined
+  }
+
+  public async setUserRefreshToken(userId: number, refreshToken: string): Promise<void> {
+    const refreshTokenHash = await this.computeHash(refreshToken)
+    await this.usersService.setRefreshTokenHash(userId, refreshTokenHash)
+  }
+
+  async updateUserPassword(userId: number, oldPassword: string, newPassword: string): Promise<boolean> {
+    // explicitly query user with the excluded/not-selected password field added via addSelect()
+    const user = await this.usersService.findByIdForVerification(userId)
+
+    if (!user) {
+      this.logger.warn(`Failed to change user password: user id <${userId}> not found`)
+      throw new UnauthorizedException()
+    }
+
+    if (!user?.password) {
+      this.logger.warn(`Failed to change user password: failed assumption - user id <${userId}> password not set`)
+      throw new UnauthorizedException()
+    }
+
+    const isValid = await this.verifyHash(user.password, oldPassword)
+
+    if (!isValid) {
+      this.logger.warn(`Failed to change user password: <${user.email}> current password verification failed by user`)
+      throw new UnauthorizedException('Invalid credentials')
+    }
+
+    if (isValid) {
+      const result = await this.usersService.setPasswordHash(user.id, await argon2.hash(newPassword))
+
+      if (result.affected === undefined) {
+        this.logger.error(`Database driver does not support returning 'affected' number of rows`)
+        throw new InternalServerErrorException('Data Error')
+      }
+
+      if (result.affected === 1) {
+        this.logger.log(`Password change successful: user <${user.email}> (id: <${user.id})`)
+        return true
+      }
+    }
+
+    throw new InternalServerErrorException('Data Error')
+  }
+
+  /**
+   * @see JwtRefreshTokenStrategy
+   */
+  public async verifyHash(hash: string, plainText: string): Promise<boolean> {
+    return argon2.verify(hash, plainText)
+  }
+
+  public async computeHash(input: string): Promise<string> {
+    return argon2.hash(input)
   }
 }

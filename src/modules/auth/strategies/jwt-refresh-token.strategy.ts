@@ -7,10 +7,15 @@ import { Request } from 'express'
 import { UsersService } from '../../users/users.service'
 import { TokenPayload } from '../types/token-payload.interface'
 import { AuthConfig } from '../../../config/auth.config'
+import { AuthService } from '../auth.service'
 
 @Injectable()
 export class JwtRefreshTokenStrategy extends PassportStrategy(Strategy, 'jwt-refresh-token') {
-  constructor(private readonly configService: ConfigService, private readonly usersService: UsersService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request) => {
@@ -34,12 +39,22 @@ export class JwtRefreshTokenStrategy extends PassportStrategy(Strategy, 'jwt-ref
    */
   async validate(request: Request, payload: TokenPayload) {
     const refreshToken = request.cookies?.Refresh
-    const user = this.usersService.getUserIfRefreshTokenMatches(payload.userId, refreshToken)
+    const user = await this.usersService.getByIdWithRefreshToken(payload.userId)
 
-    if (!user) {
-      throw new UnauthorizedException('Unauthorized')
+    if (!user || !user.refreshTokenHash) {
+      throw new UnauthorizedException()
     }
 
-    return user
+    const isValid = await this.authService.verifyHash(user.refreshTokenHash, refreshToken)
+
+    if (isValid) {
+      return {
+        ...user,
+        password: null,
+        refreshTokenHash: null,
+      }
+    }
+
+    throw new UnauthorizedException()
   }
 }

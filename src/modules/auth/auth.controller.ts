@@ -55,16 +55,16 @@ export class AuthController {
   }
 
   /**
-   * Handle requests to change the authenticated user's password.
+   * Change authenticate user's password.
    */
   @ApiCookieAuth()
   @ApiNoContentResponse({ description: 'Success changing password' })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @UseGuards(JwtAuthGuard)
   @Post('password')
-  @HttpCode(HttpStatus.NO_CONTENT) // override NestJS default 201
+  @HttpCode(HttpStatus.NO_CONTENT)
   async changePassword(@GetUser() user: User, @Body() dto: ChangePasswordDto) {
-    return this.usersService.changePassword(user.id, dto.oldPassword, dto.newPassword)
+    return this.authenticationService.updateUserPassword(user.id, dto.oldPassword, dto.newPassword)
   }
 
   /**

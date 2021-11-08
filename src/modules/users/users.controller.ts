@@ -1,20 +1,23 @@
 import {
+  Body,
   ClassSerializerInterceptor,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
+  Post,
   Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
-import { ApiCookieAuth, ApiTags } from '@nestjs/swagger'
+import { ApiCookieAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger'
+import { ApiPaginatedResponse } from '../database/decorators/openapi/api-paginated-response.decorator'
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
-import { ApiPaginatedResponse } from '../database/decorators/openapi/api-paginated-response.decorator'
 import { PaginatedResponseDto } from '../database/dto/paginated-response.dto'
 import { PageFilterSortQueryValidationPipe } from '../database/pipes/page-filter-sort-query-validation.pipe'
 import { PageFilterSortParams } from '../database/types/page-filter-sort-params.interface'
+import { CreateUserDto } from './dto/create-user.dto'
 
 import { User } from './entities/user.entity'
 import { UsersService } from './users.service'
@@ -29,10 +32,18 @@ export class UsersController {
 
   constructor(private readonly usersService: UsersService) {}
 
+  @ApiCreatedResponse()
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  async createUser(@Body() dto: CreateUserDto): Promise<User> {
+    // @todo roles
+    return this.usersService.create(dto)
+  }
+
   @ApiPaginatedResponse(User)
   @Get()
   @HttpCode(HttpStatus.OK)
-  getUsers(
+  async getUsers(
     @Query(
       new PageFilterSortQueryValidationPipe<User>({
         filter: ['email', 'timeZone'],
